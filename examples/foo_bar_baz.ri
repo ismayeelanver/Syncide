@@ -1,0 +1,19 @@
+-- Ring
+-- foo bar baz example
+
+-- All functions are Constants
+let bar() :: begin
+ -- Print a string with newline
+ println("Bar!");
+end
+
+let foo() ~ Int :: begin
+ -- Function Calls
+ bar();
+ let baz := 1; -- Mutables
+ return baz; -- return baz
+end
+
+let main() :: begin
+ let foo_bar_baz :: foo(); -- Constants
+end 

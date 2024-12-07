@@ -1,6 +1,5 @@
 #include "include/lexer.hpp"
 
-
 void Lexer::getTokens(std::string filename)
 {
   this->Filename = filename;
@@ -22,9 +21,9 @@ token_visual_t Lexer::makeToken(token_visual_value_t v, token_t t,
                                 token_position_t pos)
 {
   token_visual_t tkn = {};
-  tkn.pos = pos;
-  tkn.token_type = t;
-  tkn.value = v;
+  tkn.Position = pos;
+  tkn.Kind = t;
+  tkn.Value = v;
   return tkn;
 }
 
@@ -107,25 +106,36 @@ void Lexer::tokenize()
     case ':':
     {
       size_t expected_next = i + 1;
-      if (i > 0 && values[i - 1] == ':')
+
+      if (expected_next < values.size() && values[expected_next] == ':')
       {
-        tokens.push_back(makeToken("::", token_t::Tkn_Assignment, pos));
-        pos.col++;
+        // Handle `::` token
+        tokens.push_back(makeToken("::", token_t::Tkn_Const_Assignment, pos));
+        i++;          // Skip the second `:`
+        pos.col += 2; // Advance for both `:` characters
       }
-      else if (i + 1 < values.size() && values[expected_next] != ':')
+      else if (expected_next < values.size() && values[expected_next] == '=')
       {
-        ExpectedFound(Filename, pos.line, pos.col, ":", std::string(1, values[expected_next]));
+        // Handle `:=` token
+        tokens.push_back(makeToken(":=", token_t::Tkn_Mut_Assignment, pos));
+        i++;          // Skip the `=`
+        pos.col += 2; // Advance for both `:` and `=`
       }
-      else if (i + 1 >= values.size())
+      else if (expected_next >= values.size())
       {
-        ExpectedFound(Filename, pos.line, pos.col, ":", "EOF");
+        // Handle EOF after `:`
+        ExpectedFound(Filename, pos.line, pos.col, ": or :: or :=", "EOF");
       }
       else
       {
-        pos.col++;
+        // Handle unexpected single `:`
+        ExpectedFound(Filename, pos.line, pos.col, ": or :: or :=", std::string(1, values[expected_next]));
+        pos.col++; // Increment column for single `:`
       }
+
       break;
     }
+
     case '"':
     {
       size_t start = i++;
@@ -271,6 +281,10 @@ void Lexer::tokenize()
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_Const, pos));
         }
+        else if (identifier == "return")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Ret, pos));
+        }
         else
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_Identifier, pos));
@@ -290,72 +304,10 @@ void Lexer::tokenize()
 
 void Lexer::printToken(const token_visual_t &token)
 {
-  std::cout << "Line: " << token.pos.line << ", Column: " << token.pos.col
+  std::cout << "Line: " << token.Position.line << ", Column: " << token.Position.col
             << " - ";
-
-  switch (token.token_type)
-  {
-  case token_t::Tkn_Tilde:
-    std::cout << "Tkn_Tilde";
-    break;
-  case token_t::Tkn_Bang:
-    std::cout << "Tkn_Bang";
-    break;
-  case token_t::Tkn_At:
-    std::cout << "Tkn_At";
-    break;
-  case token_t::Tkn_Plus:
-    std::cout << "Tkn_Plus";
-    break;
-  case token_t::Tkn_Minus:
-    std::cout << "Tkn_Minus";
-    break;
-  case token_t::Tkn_Mul:
-    std::cout << "Tkn_Mul";
-    break;
-  case token_t::Tkn_Div:
-    std::cout << "Tkn_Div";
-    break;
-  case token_t::Tkn_Mod:
-    std::cout << "Tkn_Mod";
-    break;
-  case token_t::Tkn_Semi:
-    std::cout << "Tkn_Semi";
-    break;
-  case token_t::Tkn_Rparen:
-    std::cout << "Tkn_Rparen";
-    break;
-  case token_t::Tkn_Lparen:
-    std::cout << "Tkn_Lparen";
-    break;
-  case token_t::Tkn_Number:
-    std::cout << "Tkn_Number";
-    break;
-  case token_t::Tkn_Identifier:
-    std::cout << "Tkn_Id";
-    break;
-  case token_t::Tkn_Let:
-    std::cout << "Tkn_Id";
-    break;
-  case token_t::Tkn_Const:
-    std::cout << "Tkn_Id";
-    break;
-  case token_t::Tkn_If:
-    std::cout << "Tkn_Id";
-    break;
-  case token_t::Tkn_Begin:
-    std::cout << "Tkn_Begin";
-    break;
-  case token_t::Tkn_End:
-    std::cout << "Tkn_End";
-    break;
-  case token_t::Tkn_Eof:
-    std::cout << "End of File";
-    break;
-  default:
-    std::cout << "Unknown Token";
-    break;
-  }
-  std::cout << " - Value: " << token.value;
+  std::string str = tokenToStringMap.at(token.Kind);
+  std::cout << " - Value: " << token.Value;
+  std::cout << " - Type: " << TokenToString(token.Kind);
   std::cout << std::endl;
 }

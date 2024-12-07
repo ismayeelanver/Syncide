@@ -3,14 +3,17 @@
 int main(void)
 {
 
-  Lexer *lexer = new Lexer();
+  Lexer lexer = Lexer{};
 
-  lexer->getTokens("ringfiles/parser.ri");
-  lexer->tokenize();
+  lexer.getTokens("ringfiles/parser.ri");
+  lexer.tokenize();
 
-  for (auto token : lexer->tokens)
+  Parser p = Parser{"ringfiles/parser.ri"};
+  p.produceAST(lexer.tokens);
+
+  for (auto token : lexer.tokens)
   {
-    lexer->printToken(token);
+    lexer.printToken(token);
   }
 
   return 0;

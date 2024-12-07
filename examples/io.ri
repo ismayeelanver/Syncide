@@ -1,7 +1,6 @@
-let main ::
+let main() ::
 begin
- -- io
  print("Enter something: ");
  let input ~ Str :: input();
- println("You said: ", input);
+ println("You said:" & input);
 end

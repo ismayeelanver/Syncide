@@ -1,7 +1,11 @@
-#include <variant>
-#include <memory>
+#pragma once
+
 #include <string>
 #include <vector>
+#include <memory>
+#include <vector>
+#include <variant>
+#include "lexer.hpp"
 
 namespace AST
 {
@@ -13,33 +17,27 @@ namespace AST
         Enclosed,
         FunctionCall
     };
-    enum class Op
-    {
-        Plus,
-        Minus,
-        Mod,
-        Div,
-        Mul
-    };
     using Literal = std::variant<int, float, std::string>;
+
     class Expr
     {
     public:
         ExprType type;
-        virtual ~Expr() = default;
+        virtual ~Expr() = default; // Virtual destructor for polymorphism
     };
+
     // Binary Expression
     class BinaryExpr : public Expr
     {
     public:
-        BinaryExpr(std::shared_ptr<Expr> l, Op operation, std::shared_ptr<Expr> r)
+        BinaryExpr(std::shared_ptr<Expr> l, token_t operation, std::shared_ptr<Expr> r)
             : left(std::move(l)), op(operation), right(std::move(r))
         {
             type = ExprType::Binary;
         }
 
         std::shared_ptr<Expr> left;
-        Op op;
+        token_t op;
         std::shared_ptr<Expr> right;
     };
 
@@ -102,25 +100,26 @@ namespace AST
         ExprStmt,
         ProgramStmt
     };
+
     class Stmt
     {
     public:
         StmtType type;
-        virtual ~Stmt() = default;
+        virtual ~Stmt() = default; // Virtual destructor for polymorphism
     };
 
     class VariableStmt : public Stmt
     {
     public:
         VariableStmt(std::string name, std::shared_ptr<Expr> initializer)
-            : name(std::move(name)), initializer(std::move(initializer))
+            : name(std::move(name)), initializer(std::move(initializer)), isConst(false)
         {
             type = StmtType::Variable;
         }
 
-        bool isConst;
         std::string name;
         std::shared_ptr<Expr> initializer; // Expression initializing the variable
+        bool isConst;
     };
 
     class BlockStmt : public Stmt
@@ -138,8 +137,8 @@ namespace AST
     class ExprStmt : public Stmt
     {
     public:
-        explicit ExprStmt(std::shared_ptr<Expr> expr)
-            : expr(std::move(expr))
+        explicit ExprStmt(Expr expr)
+            : expr(std::make_shared<Expr>(std::move(expr)))
         {
             type = StmtType::ExprStmt;
         }
@@ -150,20 +149,22 @@ namespace AST
     class ProgramStmt : public Stmt
     {
     public:
-        explicit ProgramStmt() : body(std::make_shared<std::vector<Stmt>>())
+        ProgramStmt() : body(std::make_shared<std::vector<std::shared_ptr<Stmt>>>())
         {
             type = StmtType::ProgramStmt;
         }
 
         void addStmt(const Stmt &stmt)
         {
-            std::vector<Stmt> Body;
-            if (body)
-            {
-                body->emplace_back(stmt);
-            }
+            auto st = std::make_shared<Stmt>(std::move(stmt));
+            body->emplace_back(st); // Add statement to the program body
         }
 
-        std::shared_ptr<std::vector<Stmt>> body;
+        const std::vector<std::shared_ptr<Stmt>> &getBody() const
+        {
+            return *body;
+        }
+
+        std::shared_ptr<std::vector<std::shared_ptr<Stmt>>> body;
     };
 }
