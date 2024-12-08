@@ -46,6 +46,8 @@ private:
     std::shared_ptr<std::vector<token_visual_t>> tokens;
     bool notEof();
 
+    std::shared_ptr<Stmt> variable();
+
     std::shared_ptr<Stmt> stmt();
     std::shared_ptr<Expr> expr();
 

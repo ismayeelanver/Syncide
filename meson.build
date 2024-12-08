@@ -5,4 +5,4 @@ src = ['src/main.cpp', 'src/lexer.cpp', 'src/parser.cpp']
 
 dependencies = [dependency('fmt')]
 
-executable('Syncate', src, include_directories: 'src/include', dependencies: dependencies)
+executable('syncate', src, include_directories: 'src/include', dependencies: dependencies)

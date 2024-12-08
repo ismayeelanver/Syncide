@@ -111,13 +111,14 @@ namespace AST
     class VariableStmt : public Stmt
     {
     public:
-        VariableStmt(std::string name, std::shared_ptr<Expr> initializer)
-            : name(std::move(name)), initializer(std::move(initializer)), isConst(false)
+        VariableStmt(std::string name, std::shared_ptr<Expr> initializer, bool constant, std::string typedname)
+            : name(std::move(name)), initializer(std::move(initializer)), isConst(constant), typedname(typedname)
         {
             type = StmtType::Variable;
         }
 
         std::string name;
+        std::string typedname;
         std::shared_ptr<Expr> initializer; // Expression initializing the variable
         bool isConst;
     };
@@ -327,6 +328,7 @@ namespace AST
             std::cout << indent() << "VariableStmt:\n";
             indent_level++;
             std::cout << indent() << "Name: " << stmt->name << "\n";
+            std::cout << indent() << "Type: " << stmt->typedname << "\n";
             std::cout << indent() << "IsConst: " << (stmt->isConst ? "true" : "false") << "\n";
             if (stmt->initializer)
             {

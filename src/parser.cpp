@@ -36,8 +36,62 @@ token_visual_t Parser::eat()
  return currentToken;
 }
 
+std::shared_ptr<Stmt> Parser::variable()
+{
+ consume(token_t::Tkn_Let); // Consume the 'let' keyword
+ auto name = eat();         // Eat the next token (which should be an identifier)
+
+ if (name.Kind != token_t::Tkn_Identifier)
+ {
+  ExpectedFound(filename, name.Position.line, name.Position.col, "Identifier", TokenToString(name.Kind));
+  return nullptr;
+ }
+
+ std::string typedname = "Unknown"; // Default typedname value
+
+ if (at().Kind == token_t::Tkn_Tilde)
+ {           // Check for tilde (~)
+  advance(); // Consume the tilde
+  if (at().Kind != token_t::Tkn_Identifier)
+  {
+   ExpectedFound(filename, at().Position.line, at().Position.col, "Identifier", TokenToString(at().Kind));
+   return nullptr;
+  }
+  else
+  {
+   typedname = eat().Value; // Consume the identifier after tilde
+  }
+ }
+
+ bool constant = false;
+
+ if (at().Kind == token_t::Tkn_Const_Assignment || at().Kind == token_t::Tkn_Mut_Assignment)
+ {
+  if (at().Kind == token_t::Tkn_Const_Assignment)
+  {
+   constant = true; // Mark as constant if it's a const assignment
+  }
+  advance(); // Consume the assignment operator
+ }
+ else
+ {
+  ExpectedFound(filename, at().Position.line, at().Position.col, ":: or :=", at().Value);
+  return nullptr;
+ }
+
+ auto valueExpr = expr(); // Parse the expression
+
+ consume(token_t::Tkn_Semi); // Consume the semicolon
+
+ return std::make_shared<VariableStmt>(name.Value, valueExpr, constant, typedname); // Return the variable statement
+}
+
 std::shared_ptr<Stmt> Parser::stmt()
 {
+ if (at().Kind == token_t::Tkn_Let)
+ {
+  return variable();
+ }
  auto expression = expr(); // Get the expression
  consume(token_t::Tkn_Semi);
  return std::make_shared<ExprStmt>(expression);
@@ -88,7 +142,6 @@ std::shared_ptr<Expr> Parser::primary()
 std::shared_ptr<Expr> Parser::binary(int p = 0)
 {
  auto left = primary();
-
 
  while (notEof())
  {
