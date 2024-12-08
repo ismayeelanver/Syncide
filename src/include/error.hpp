@@ -51,7 +51,7 @@ public:
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
-      for (int i; i < column.value(); ++i)
+      for (int i = 1; i < column.value(); ++i)
       {
          pointer << '~';
       }
@@ -80,7 +80,7 @@ public:
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
-      for (int i; i < column.value(); ++i)
+      for (int i = 1; i < column.value(); ++i)
       {
          pointer << '~';
       }
@@ -109,7 +109,7 @@ public:
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
-      for (int i; i < column.value(); ++i)
+      for (int i = 1; i < column.value(); ++i)
       {
          pointer << '~';
       }
@@ -138,7 +138,7 @@ public:
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
-      for (int i; i < column.value(); ++i)
+      for (int i = 1; i < column.value(); ++i)
       {
          pointer << '~';
       }
@@ -167,7 +167,7 @@ public:
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
-      for (int i; i < column.value(); ++i)
+      for (int i = 1; i < column.value(); ++i)
       {
          pointer << '~';
       }

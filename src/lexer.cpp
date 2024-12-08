@@ -247,7 +247,15 @@ void Lexer::tokenize()
         }
         std::string number =
             std::string(values.begin() + start, values.begin() + i);
-        tokens.push_back(makeToken(number, token_t::Tkn_Number, pos));
+
+        if (!isFloat)
+        {
+          tokens.push_back(makeToken(number, token_t::Tkn_Number, pos));
+        }
+        else
+        {
+          tokens.push_back(makeToken(number, token_t::Tkn_Float, pos));
+        }
         pos.col += (i - start);
         --i;
       }

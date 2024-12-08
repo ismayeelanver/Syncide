@@ -5,16 +5,15 @@ int main(void)
 
   Lexer lexer = Lexer{};
 
-  lexer.getTokens("ringfiles/parser.ri");
+  lexer.getTokens("examples/parser.sy");
   lexer.tokenize();
 
-  Parser p = Parser{"ringfiles/parser.ri"};
-  p.produceAST(lexer.tokens);
+  Parser p = Parser{"examples/parser.sy"};
+  AST::DebugVisitor debugger;
+  auto program = std::make_shared<Program>(std::move(p.produceAST(lexer.tokens)));
 
-  for (auto token : lexer.tokens)
-  {
-    lexer.printToken(token);
-  }
+  debugger.visitProgramStmt(program);
+
 
   return 0;
 }

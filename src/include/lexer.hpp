@@ -34,6 +34,7 @@ typedef enum class token_t
   // Identifiers and numbers
   Tkn_Identifier,
   Tkn_Number,
+  Tkn_Float,
   Tkn_String,
 
   // Keywords
