@@ -17,7 +17,7 @@ void Lexer::getTokens(std::string filename)
   file.close();
 }
 
-token_visual_t Lexer::makeToken(token_visual_value_t v, token_t t,
+token_visual_t Lexer::makeToken(std::string v, token_t t,
                                 token_position_t pos)
 {
   token_visual_t tkn = {};
@@ -34,6 +34,12 @@ void Lexer::tokenize()
     char ch = values.at(i);
     switch (ch)
     {
+    case ',':
+    {
+      tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Comma, pos));
+      pos.col++;
+      break;
+    }
     case '~':
     {
       tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Tilde, pos));
@@ -128,8 +134,7 @@ void Lexer::tokenize()
       }
       else
       {
-        // Handle unexpected single `:`
-        ExpectedFound(Filename, pos.line, pos.col, ": or :: or :=", std::string(1, values[expected_next]));
+        tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Colon, pos));
         pos.col++; // Increment column for single `:`
       }
 
@@ -224,51 +229,56 @@ void Lexer::tokenize()
       {
         bool isFloat = false;
         size_t start = i;
+        bool decimalPointSeen = false;
+
         for (++i; i < values.size() && (std::isdigit(values[i]) || values[i] == '.' || values[i] == '_'); ++i)
         {
-          if (values[i] == '_')
+          if (values[i] == '_') // Skip underscores
           {
             continue;
           }
+
           if (values[i] == '.')
           {
-            if (isFloat)
+            if (decimalPointSeen) // Only allow one decimal point
             {
               pos.col += (i - start);
               InvalidFloat(Filename, pos.line, pos.col);
+              break;
             }
-            if (i < values.size() && !std::isdigit(values[i + 1]))
-            {
-              pos.col += (i - start);
-              InvalidFloat(Filename, pos.line, pos.col);
-            }
-          }
-          isFloat = true;
-        }
-        std::string number =
-            std::string(values.begin() + start, values.begin() + i);
 
-        if (!isFloat)
-        {
-          tokens.push_back(makeToken(number, token_t::Tkn_Number, pos));
+            // Ensure that there are digits after the decimal point
+            if (i + 1 >= values.size() || !std::isdigit(values[i + 1]))
+            {
+              pos.col += (i - start);
+              InvalidFloat(Filename, pos.line, pos.col);
+              break;
+            }
+
+            decimalPointSeen = true;
+          }
         }
-        else
+
+        std::string number = std::string(values.begin() + start, values.begin() + i);
+        if (decimalPointSeen)
         {
           tokens.push_back(makeToken(number, token_t::Tkn_Float, pos));
         }
-        pos.col += (i - start);
-        --i;
+        else
+        {
+          tokens.push_back(makeToken(number, token_t::Tkn_Number, pos));
+        }
+
+        pos.col += (i - start); // Adjust column position after the token
+        --i;                    // Decrement i as it's incremented in the for loop
       }
       else if (std::isalpha(ch) || ch == '_')
       {
         size_t start = i;
-        for (++i;
-             i < values.size() && (std::isalnum(values[i]) || values[i] == '_');
-             ++i)
+        for (++i; i < values.size() && (std::isalnum(values[i]) || values[i] == '_'); ++i)
         {
         }
-        std::string identifier =
-            std::string(values.begin() + start, values.begin() + i);
+        std::string identifier = std::string(values.begin() + start, values.begin() + i);
         if (identifier == "if")
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_If, pos));
@@ -277,17 +287,13 @@ void Lexer::tokenize()
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_Let, pos));
         }
-        else if (identifier == "const")
-        {
-          tokens.push_back(makeToken(identifier, token_t::Tkn_Const, pos));
-        }
         else if (identifier == "begin")
         {
-          tokens.push_back(makeToken(identifier, token_t::Tkn_Const, pos));
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Begin, pos));
         }
         else if (identifier == "end")
         {
-          tokens.push_back(makeToken(identifier, token_t::Tkn_Const, pos));
+          tokens.push_back(makeToken(identifier, token_t::Tkn_End, pos));
         }
         else if (identifier == "return")
         {

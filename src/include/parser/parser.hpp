@@ -1,6 +1,6 @@
 #pragma once
-#include <parser/ast.hpp>
-#include <lexer.hpp>
+#include "ast.hpp"
+#include "../lexer.hpp"
 #include <memory>
 #include <unordered_map>
 #include <limits>
@@ -18,6 +18,7 @@ using IdentifierExpr = AST::IdentifierExpr;
 using Program = AST::ProgramStmt;
 using BlockStmt = AST::BlockStmt;
 using VariableStmt = AST::VariableStmt;
+using FunctionStmt = AST::FunctionStmt;
 using ExprStmt = AST::ExprStmt;
 
 inline std::unordered_map<token_t, int> opPr = {
@@ -46,7 +47,7 @@ private:
     std::shared_ptr<std::vector<token_visual_t>> tokens;
     bool notEof();
 
-    std::shared_ptr<Stmt> variable();
+    std::shared_ptr<Stmt> variableOrfunction();
 
     std::shared_ptr<Stmt> stmt();
     std::shared_ptr<Expr> expr();

@@ -1,1 +1,3 @@
-let i :: 11;
+let main(i: int, b: int) ~ int :: begin
+ return 0;
+end

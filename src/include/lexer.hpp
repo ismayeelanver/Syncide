@@ -6,7 +6,7 @@
 
 #include <fmt/core.h>
 
-#include <error.hpp>
+#include "error.hpp"
 #include <unordered_map>
 
 using token_value_t = char;
@@ -29,6 +29,8 @@ typedef enum class token_t
   Tkn_Mul,
   Tkn_Mod,
   Tkn_Bang,
+  Tkn_Comma,
+  Tkn_Colon,
   Tkn_At, // @
 
   // Identifiers and numbers
@@ -40,7 +42,6 @@ typedef enum class token_t
   // Keywords
   Tkn_If,
   Tkn_Let,
-  Tkn_Const,
   Tkn_Begin,
   Tkn_End,
   Tkn_Ret,
@@ -62,13 +63,15 @@ inline std::unordered_map<token_t, std::string> tokenToStringMap = {
     {token_t::Tkn_Mul, "Tkn_Mul"},
     {token_t::Tkn_Mod, "Tkn_Mod"},
     {token_t::Tkn_Bang, "Tkn_Bang"},
+    {token_t::Tkn_Float, "Tkn_Float"},
+    {token_t::Tkn_Comma, "Tkn_Comma"},
+    {token_t::Tkn_Colon, "Tkn_Colon"},
     {token_t::Tkn_At, "Tkn_At"},
     {token_t::Tkn_Identifier, "Tkn_Identifier"},
     {token_t::Tkn_Number, "Tkn_Number"},
     {token_t::Tkn_String, "Tkn_String"},
     {token_t::Tkn_If, "Tkn_If"},
     {token_t::Tkn_Let, "Tkn_Let"},
-    {token_t::Tkn_Const, "Tkn_Const"},
     {token_t::Tkn_Begin, "Tkn_Begin"},
     {token_t::Tkn_End, "Tkn_End"},
     {token_t::Tkn_Ret, "Tkn_Ret"},
@@ -91,7 +94,7 @@ class token_visual_t
 {
 public:
   token_t Kind;
-  token_visual_value_t Value;
+  std::string Value;
   token_position_t Position;
 };
 
@@ -110,5 +113,5 @@ public:
 
   void tokenize();
 
-  token_visual_t makeToken(token_visual_value_t, token_t, token_position_t);
+  token_visual_t makeToken(std::string, token_t, token_position_t);
 };

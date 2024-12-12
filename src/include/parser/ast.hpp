@@ -6,7 +6,7 @@
 #include <vector>
 #include <cstdint>
 #include <variant>
-#include "lexer.hpp"
+#include "../lexer.hpp"
 
 namespace AST
 {
@@ -19,6 +19,25 @@ namespace AST
         FunctionCall
     };
     using Literal = std::variant<int64_t, double, std::string>;
+    inline std::unordered_map<ExprType, std::string> mapOfTypesOfExprs = {
+        {ExprType::Literal, "Literal"},
+        {ExprType::Identifier, "Identifier"},
+        {ExprType::Binary, "Binary"},
+        {ExprType::Enclosed, "Enclosed"},
+        {ExprType::FunctionCall, "FunctionCall"}};
+    inline std::string
+    FindExprType(ExprType t)
+    {
+        auto a = mapOfTypesOfExprs.find(t);
+        if (a != mapOfTypesOfExprs.end())
+        {
+            return a->second;
+        }
+        else
+        {
+            return "Expr";
+        }
+    }
 
     class Expr
     {
@@ -96,6 +115,7 @@ namespace AST
     enum class StmtType
     {
         Variable,
+        Function,
         Block,
         ExprStmt,
         ProgramStmt
@@ -126,13 +146,51 @@ namespace AST
     class BlockStmt : public Stmt
     {
     public:
-        explicit BlockStmt(std::vector<std::shared_ptr<Stmt>> stmts)
-            : statements(std::move(stmts))
+        explicit BlockStmt()
+            : statements(std::make_shared<std::vector<std::shared_ptr<Stmt>>>())
         {
             type = StmtType::Block;
         }
 
-        std::vector<std::shared_ptr<Stmt>> statements;
+        void addStmt(std::shared_ptr<Stmt> s)
+        {
+            statements->emplace_back(std::move(s));
+        }
+
+        std::shared_ptr<std::vector<std::shared_ptr<Stmt>>> statements;
+    };
+
+    class FunctionStmt : public Stmt
+    {
+    public:
+        std::string name;
+        std::vector<std::pair<std::string, std::string>> param;
+        std::string typedname;
+        std::shared_ptr<std::vector<std::shared_ptr<Stmt>>> body;
+
+        FunctionStmt(const std::string &name,
+                     const std::vector<std::pair<std::string, std::string>> &parameters,
+                     const std::string &returnType,
+                     const std::vector<std::shared_ptr<Stmt>> &bodyStmts)
+            : name(name),
+              param(parameters),
+              typedname(returnType),
+              body(std::make_shared<std::vector<std::shared_ptr<Stmt>>>(bodyStmts))
+        {
+            type = StmtType::Function;
+        }
+
+        // Helper method to add statements to the function body
+        void addStmt(const std::shared_ptr<Stmt> &stmt)
+        {
+            body->push_back(stmt);
+        }
+
+        // Getter for body statements
+        const std::vector<std::shared_ptr<Stmt>> &getBody() const
+        {
+            return *body;
+        }
     };
 
     class ExprStmt : public Stmt
@@ -201,9 +259,9 @@ namespace AST
         }
 
     public:
-        void visitExpr(const std::shared_ptr<Expr> &expr)
+        void visitExpr(std::shared_ptr<Expr> &expr)
         {
-            if (expr == nullptr)
+            if (!expr.get())
             {
                 std::cout << indent() << "null expression\n";
                 return;
@@ -320,7 +378,47 @@ namespace AST
             case StmtType::ProgramStmt:
                 visitProgramStmt(std::static_pointer_cast<ProgramStmt>(stmt));
                 break;
+            case StmtType::Function:
+                visitFunctionStmt(std::static_pointer_cast<FunctionStmt>(stmt));
+                break;
             }
+        }
+
+        void visitFunctionStmt(const std::shared_ptr<FunctionStmt> &stmt)
+        {
+            std::cout << indent() << "FunctionStmt:\n";
+            indent_level++;
+
+            // Print function name and return type
+            std::cout << indent() << "Name: " << stmt->name << "\n";
+            std::cout << indent() << "Return Type: " << stmt->typedname << "\n";
+
+            // Print parameters
+            std::cout << indent() << "Parameters:\n";
+            indent_level++;
+            for (const auto &p : stmt->param)
+            {
+                std::cout << indent() << "Parameter: " << p.first << " (Type: " << p.second << ")\n";
+            }
+            indent_level--;
+
+            // Print function body
+            std::cout << indent() << "Body:\n";
+            indent_level++;
+            if (stmt->body && !stmt->body->empty())
+            {
+                for (const auto &statement : stmt->getBody())
+                {
+                    visitStmt(statement);
+                }
+            }
+            else
+            {
+                std::cout << indent() << "Empty function body\n";
+            }
+            indent_level--;
+
+            indent_level--;
         }
 
         void visitVariableStmt(const std::shared_ptr<VariableStmt> &stmt)
@@ -348,15 +446,15 @@ namespace AST
         {
             std::cout << indent() << "BlockStmt:\n";
             indent_level++;
-            if (!stmt->statements.empty())
+            if (!stmt->statements->empty())
             {
-                std::cout << indent() << "Statements (" << stmt->statements.size() << "):\n";
+                std::cout << indent() << "Statements (" << stmt->statements->size() << "):\n";
                 indent_level++;
-                for (size_t i = 0; i < stmt->statements.size(); i++)
+                for (size_t i = 0; i < stmt->statements->size(); i++)
                 {
                     std::cout << indent() << "Stmt[" << i << "]:\n";
                     indent_level++;
-                    visitStmt(stmt->statements[i]);
+                    visitStmt(stmt->statements->at(i));
                     indent_level--;
                 }
                 indent_level--;

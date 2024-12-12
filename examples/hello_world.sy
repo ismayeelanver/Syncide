@@ -1,4 +1,4 @@
-let main() ::
+let main(i) ::
 begin
  println("Hello, world!");
 end
