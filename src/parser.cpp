@@ -163,11 +163,40 @@ std::shared_ptr<Stmt> Parser::variableOrfunction()
     }
 }
 
+std::shared_ptr<Stmt> Parser::returnStmt()
+{
+    consume(token_t::Tkn_Ret);
+
+    auto exprofthisshit = expr();
+    consume(token_t::Tkn_Semi);
+
+    return std::make_shared<ReturnStmt>(exprofthisshit);
+}
+
+std::shared_ptr<Stmt> Parser::stmtsOutside()
+{
+    if (at().Kind == token_t::Tkn_Let)
+    {
+        auto stmt = variableOrfunction();
+        return stmt;
+    }
+    else
+    {
+        std::cerr << "Parse Error!\n";
+        exit(EXIT_FAILURE);
+    }
+}
+
 std::shared_ptr<Stmt> Parser::stmt()
 {
     if (at().Kind == token_t::Tkn_Let)
     {
         auto stmt = variableOrfunction();
+        return stmt;
+    }
+    if (at().Kind == token_t::Tkn_Ret)
+    {
+        auto stmt = returnStmt();
         return stmt;
     }
     auto expression = expr(); // Get the expression
@@ -180,15 +209,45 @@ std::shared_ptr<Expr> Parser::expr()
     return binary(0);
 }
 
+// statements inside the globalScope
+// are funcitons, lets, structs and that's all for a minimal programming language
+
 std::shared_ptr<Expr> Parser::primary()
 {
     auto tk = at().Kind;
 
     switch (tk)
     {
+    case token_t::Tkn_Minus:
+    {
+        auto op = eat();
+        auto operand = primary();
+        return std::make_shared<UnaryExpr>(op, operand);
+    }
     case token_t::Tkn_Identifier:
     {
-        return std::make_shared<IdentifierExpr>(eat().Value);
+        auto identifier = eat(); // Consume the identifier
+        if (at().Kind == token_t::Tkn_Lparen)
+        {
+            // Parse function call
+            consume(token_t::Tkn_Lparen); // Consume '('
+            std::vector<std::shared_ptr<Expr>> arguments;
+
+            // Parse arguments
+            while (notEof() && at().Kind != token_t::Tkn_Rparen)
+            {
+                arguments.push_back(expr()); // Parse the argument
+                if (at().Kind == token_t::Tkn_Comma)
+                {
+                    consume(token_t::Tkn_Comma); // Consume ','
+                }
+            }
+
+            consume(token_t::Tkn_Rparen); // Consume ')'
+
+            return std::make_shared<CallExpr>(identifier.Value, arguments);
+        }
+        return std::make_shared<IdentifierExpr>(identifier.Value);
     }
     case token_t::Tkn_Number:
     {
@@ -246,7 +305,7 @@ Program Parser::produceAST(std::vector<token_visual_t> tks)
 
     while (notEof())
     {
-        auto statement = stmt();
+        auto statement = stmtsOutside();
         p.addStmt(std::move(statement));
     }
 

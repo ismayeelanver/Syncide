@@ -13,6 +13,7 @@ namespace AST
     enum class ExprType
     {
         Literal,
+        Unary,
         Identifier,
         Binary,
         Enclosed,
@@ -61,6 +62,18 @@ namespace AST
         std::shared_ptr<Expr> right;
     };
 
+    class UnaryExpr : public Expr
+    {
+    public:
+        token_visual_t op;
+        std::shared_ptr<Expr> operand;
+        UnaryExpr(token_visual_t op, std::shared_ptr<Expr> operand)
+            : op(op), operand(std::move(operand))
+        {
+            type = ExprType::Unary;
+        }
+    };
+
     // Literal Expression
     class LiteralExpr : public Expr
     {
@@ -102,13 +115,13 @@ namespace AST
     class CallExpr : public Expr
     {
     public:
-        CallExpr(std::shared_ptr<Expr> callee, std::vector<std::shared_ptr<Expr>> arguments)
-            : callee(std::move(callee)), arguments(std::move(arguments))
+        CallExpr(std::string callee, std::vector<std::shared_ptr<Expr>> arguments)
+            : callee(callee), arguments(std::move(arguments))
         {
             type = ExprType::FunctionCall;
         }
 
-        std::shared_ptr<Expr> callee;                 // The function or identifier being called
+        std::string callee;                           // The function or identifier being called
         std::vector<std::shared_ptr<Expr>> arguments; // List of arguments
     };
 
@@ -118,7 +131,8 @@ namespace AST
         Function,
         Block,
         ExprStmt,
-        ProgramStmt
+        ProgramStmt,
+        ReturnStmt
     };
 
     class Stmt
@@ -191,6 +205,17 @@ namespace AST
         {
             return *body;
         }
+    };
+
+    class ReturnStmt : public Stmt
+    {
+    public:
+        ReturnStmt(std::shared_ptr<Expr> &expr) : expr(std::move(expr))
+        {
+            type = StmtType::ReturnStmt;
+        }
+
+        std::shared_ptr<Expr> expr;
     };
 
     class ExprStmt : public Stmt
@@ -281,10 +306,24 @@ namespace AST
             case ExprType::Identifier:
                 visitIdentifierExpr(std::static_pointer_cast<IdentifierExpr>(expr));
                 break;
+            case ExprType::Unary:
+                visitUnaryExpr(std::static_pointer_cast<UnaryExpr>(expr));
+                break;
             case ExprType::FunctionCall:
                 visitCallExpr(std::static_pointer_cast<CallExpr>(expr));
                 break;
             }
+        }
+
+        void visitUnaryExpr(const std::shared_ptr<UnaryExpr> &expr)
+        {
+            std::cout << indent() << "UnaryExpr:\n";
+            indent_level++;
+            std::cout << indent() << "Operator: " << expr->op.Value << "\n";
+            std::cout << indent() << "Operand:\n";
+            indent_level++;
+            visitExpr(expr->operand);
+            indent_level--;
         }
 
         void visitBinaryExpr(const std::shared_ptr<BinaryExpr> &expr)
@@ -333,7 +372,7 @@ namespace AST
             indent_level++;
             std::cout << indent() << "Callee:\n";
             indent_level++;
-            visitExpr(expr->callee);
+            std::cout << indent() << expr->callee << "\n";
             indent_level--;
 
             if (!expr->arguments.empty())
@@ -381,7 +420,22 @@ namespace AST
             case StmtType::Function:
                 visitFunctionStmt(std::static_pointer_cast<FunctionStmt>(stmt));
                 break;
+            case StmtType::ReturnStmt:
+                visitReturnStmt(std::static_pointer_cast<ReturnStmt>(stmt));
+                break;
             }
+        }
+
+        void visitReturnStmt(const std::shared_ptr<ReturnStmt> &stmt)
+        {
+            std::cout << indent() << "ReturnStmt:\n";
+            indent_level++;
+
+            std::cout << indent() << "InnerExpr:\n";
+            indent_level++;
+            visitExpr(stmt->expr);
+            indent_level--;
+            indent_level--;
         }
 
         void visitFunctionStmt(const std::shared_ptr<FunctionStmt> &stmt)

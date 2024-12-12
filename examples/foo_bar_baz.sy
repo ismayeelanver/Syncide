@@ -1,6 +1,7 @@
 -- Ring
 -- foo bar baz example
 
+
 -- All functions are Constants
 let bar() :: begin
  -- Print a string with newline

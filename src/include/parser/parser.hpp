@@ -10,6 +10,7 @@ using Stmt = AST::Stmt;
 
 // Exprs and Stmts
 using BinaryExpr = AST::BinaryExpr;
+using UnaryExpr = AST::UnaryExpr;
 using ParenthesizedExpr = AST::EnclosedExpr;
 using CallExpr = AST::CallExpr;
 using LiteralExpr = AST::LiteralExpr;
@@ -20,6 +21,7 @@ using BlockStmt = AST::BlockStmt;
 using VariableStmt = AST::VariableStmt;
 using FunctionStmt = AST::FunctionStmt;
 using ExprStmt = AST::ExprStmt;
+using ReturnStmt = AST::ReturnStmt;
 
 inline std::unordered_map<token_t, int> opPr = {
     {token_t::Tkn_Div, 20},
@@ -48,6 +50,8 @@ private:
     bool notEof();
 
     std::shared_ptr<Stmt> variableOrfunction();
+    std::shared_ptr<Stmt> stmtsOutside();
+    std::shared_ptr<Stmt> returnStmt();
 
     std::shared_ptr<Stmt> stmt();
     std::shared_ptr<Expr> expr();
