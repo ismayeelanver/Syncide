@@ -13,6 +13,8 @@ namespace AST
     enum class ExprType
     {
         Literal,
+        Array,
+        Boolean,
         Unary,
         Identifier,
         Binary,
@@ -74,6 +76,17 @@ namespace AST
         }
     };
 
+    class BooleanExpr : public Expr
+    {
+    public:
+        explicit BooleanExpr(bool capOrnocap) : huh(capOrnocap)
+        {
+            type = ExprType::Boolean;
+        }
+
+        bool huh;
+    };
+
     // Literal Expression
     class LiteralExpr : public Expr
     {
@@ -123,6 +136,16 @@ namespace AST
 
         std::string callee;                           // The function or identifier being called
         std::vector<std::shared_ptr<Expr>> arguments; // List of arguments
+    };
+
+    class ArrayExpr : public Expr
+    {
+    public:
+        ArrayExpr(std::vector<std::shared_ptr<Expr>> elements) : elements(elements)
+        {
+            type = ExprType::Array;
+        }
+        std::vector<std::shared_ptr<Expr>> elements;
     };
 
     enum class StmtType
@@ -294,6 +317,12 @@ namespace AST
 
             switch (expr->type)
             {
+            case ExprType::Array:
+                visitArrayExpr(std::static_pointer_cast<ArrayExpr>(expr));
+                break;
+            case ExprType::Boolean:
+                visitBooleanExpr(std::static_pointer_cast<BooleanExpr>(expr));
+                break;
             case ExprType::Binary:
                 visitBinaryExpr(std::static_pointer_cast<BinaryExpr>(expr));
                 break;
@@ -313,6 +342,25 @@ namespace AST
                 visitCallExpr(std::static_pointer_cast<CallExpr>(expr));
                 break;
             }
+        }
+
+        void visitArrayExpr(const std::shared_ptr<ArrayExpr> &expr)
+        {
+            std::cout << indent() << "ArrayExpr:\n";
+            indent_level++;
+            for (auto element : expr->elements)
+            {
+                visitExpr(element);
+            }
+            indent_level--;
+        }
+
+        void visitBooleanExpr(const std::shared_ptr<BooleanExpr> &expr)
+        {
+            std::cout << indent() << "BooleanExpr:\n";
+            indent_level++;
+            std::cout << indent() << (expr->huh ? (std::string) "true" : (std::string) "false") << "\n";
+            indent_level--;
         }
 
         void visitUnaryExpr(const std::shared_ptr<UnaryExpr> &expr)

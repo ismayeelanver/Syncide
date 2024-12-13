@@ -11,6 +11,8 @@ using Stmt = AST::Stmt;
 // Exprs and Stmts
 using BinaryExpr = AST::BinaryExpr;
 using UnaryExpr = AST::UnaryExpr;
+using ArrayExpr = AST::ArrayExpr;
+using BooleanExpr = AST::BooleanExpr;
 using ParenthesizedExpr = AST::EnclosedExpr;
 using CallExpr = AST::CallExpr;
 using LiteralExpr = AST::LiteralExpr;

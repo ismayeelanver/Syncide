@@ -1,0 +1,3 @@
+let main() :: begin
+ let arr := {1, 2};
+end

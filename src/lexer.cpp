@@ -199,6 +199,18 @@ void Lexer::tokenize()
       }
       break;
     }
+    case '}':
+    {
+      tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_RCurly, pos));
+      pos.col++;
+      break;
+    }
+    case '{':
+    {
+      tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_LCurly, pos));
+      pos.col++;
+      break;
+    }
     case ')':
     {
       tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Rparen, pos));
@@ -298,6 +310,14 @@ void Lexer::tokenize()
         else if (identifier == "return")
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_Ret, pos));
+        }
+        else if (identifier == "true")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_True, pos));
+        }
+        else if (identifier == "false")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_False, pos));
         }
         else
         {

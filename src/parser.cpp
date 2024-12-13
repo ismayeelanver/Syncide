@@ -261,6 +261,22 @@ std::shared_ptr<Expr> Parser::primary()
     {
         return std::make_shared<LiteralExpr>(eat().Value);
     }
+    case token_t::Tkn_LCurly:
+    {
+        consume(token_t::Tkn_LCurly);
+        std::vector<std::shared_ptr<Expr>> elements;
+
+        while (notEof() && at().Kind != token_t::Tkn_RCurly)
+        {
+            elements.push_back(expr()); // Parse each element
+            if (at().Kind == token_t::Tkn_Comma)
+            {
+                consume(token_t::Tkn_Comma); // Consume ',' between elements
+            }
+        }
+        consume(token_t::Tkn_RCurly);
+        return std::make_shared<ArrayExpr>(elements);
+    }
     case token_t::Tkn_Lparen:
     {
         consume(token_t::Tkn_Lparen);
