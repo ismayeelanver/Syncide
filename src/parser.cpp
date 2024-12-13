@@ -209,6 +209,32 @@ std::shared_ptr<Expr> Parser::expr()
     return binary(0);
 }
 
+std::shared_ptr<Expr> Parser::makeAfterIdentifier()
+{
+    auto identifier = eat();
+    if (at().Kind == token_t::Tkn_Lparen)
+    {
+        // Parse function call
+        consume(token_t::Tkn_Lparen); // Consume '('
+        std::vector<std::shared_ptr<Expr>> arguments;
+
+        // Parse arguments
+        while (notEof() && at().Kind != token_t::Tkn_Rparen)
+        {
+            arguments.push_back(expr()); // Parse the argument
+            if (at().Kind == token_t::Tkn_Comma)
+            {
+                consume(token_t::Tkn_Comma); // Consume ','
+            }
+        }
+
+        consume(token_t::Tkn_Rparen); // Consume ')'
+
+        return std::make_shared<CallExpr>(identifier.Value, arguments);
+    }
+    return std::make_shared<IdentifierExpr>(identifier.Value);
+}
+
 // statements inside the globalScope
 // are funcitons, lets, structs and that's all for a minimal programming language
 
@@ -226,28 +252,8 @@ std::shared_ptr<Expr> Parser::primary()
     }
     case token_t::Tkn_Identifier:
     {
-        auto identifier = eat(); // Consume the identifier
-        if (at().Kind == token_t::Tkn_Lparen)
-        {
-            // Parse function call
-            consume(token_t::Tkn_Lparen); // Consume '('
-            std::vector<std::shared_ptr<Expr>> arguments;
-
-            // Parse arguments
-            while (notEof() && at().Kind != token_t::Tkn_Rparen)
-            {
-                arguments.push_back(expr()); // Parse the argument
-                if (at().Kind == token_t::Tkn_Comma)
-                {
-                    consume(token_t::Tkn_Comma); // Consume ','
-                }
-            }
-
-            consume(token_t::Tkn_Rparen); // Consume ')'
-
-            return std::make_shared<CallExpr>(identifier.Value, arguments);
-        }
-        return std::make_shared<IdentifierExpr>(identifier.Value);
+        auto expression = makeAfterIdentifier();
+        return expression;
     }
     case token_t::Tkn_Number:
     {

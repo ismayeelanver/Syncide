@@ -55,6 +55,8 @@ private:
     std::shared_ptr<Stmt> stmtsOutside();
     std::shared_ptr<Stmt> returnStmt();
 
+    std::shared_ptr<Expr> makeAfterIdentifier();
+
     std::shared_ptr<Stmt> stmt();
     std::shared_ptr<Expr> expr();
 

@@ -46,14 +46,14 @@ public:
       column = c;
       std::string lineOfCode = getLine(file, static_cast<std::size_t>(line.value()));
       fmt::print(stderr, blue("✦ [Error ✘] \n") + gold("└── {}\n"), red(what()));
-      fmt::print(stderr, "{} {}\n {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"));
+      fmt::print(stderr, "{} {}\n {} {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"), green("[" + std::to_string(line.value()) + " " + "|" + " " + std::to_string(column.value()) + "]"));
       fmt::print(stderr, gold("───────≼≽────────\n"));
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
       for (int i = 1; i < column.value(); ++i)
       {
-         pointer << '~';
+         pointer << ' ';
       }
 
       fmt::print(stderr, "\t{}{}\n", blue(pointer.str()), green(std::string("↑")));
@@ -75,14 +75,14 @@ public:
       column = c;
       std::string lineOfCode = getLine(file, static_cast<std::size_t>(line.value()));
       fmt::print(stderr, blue("✦ [Error ✘] \n") + gold("└── {}\n"), red(what()));
-      fmt::print(stderr, "{} {}\n {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"));
+      fmt::print(stderr, "{} {}\n {} {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"), green("[" + std::to_string(line.value()) + " " + "|" + " " + std::to_string(column.value()) + "]"));
       fmt::print(stderr, gold("───────≼≽────────\n"));
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
       for (int i = 1; i < column.value(); ++i)
       {
-         pointer << '~';
+         pointer << ' ';
       }
 
       fmt::print(stderr, "\t{}{}\n", blue(pointer.str()), green(std::string("↑")));
@@ -104,14 +104,14 @@ public:
       column = c;
       std::string lineOfCode = getLine(file, static_cast<std::size_t>(line.value()));
       fmt::print(stderr, blue("✦ [Error ✘] \n") + gold("└── {}\n"), red(what()));
-      fmt::print(stderr, "{} {}\n {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"));
+      fmt::print(stderr, "{} {}\n {} {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"), green("[" + std::to_string(line.value()) + " " + "|" + " " + std::to_string(column.value()) + "]"));
       fmt::print(stderr, gold("───────≼≽────────\n"));
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
       for (int i = 1; i < column.value(); ++i)
       {
-         pointer << '~';
+         pointer << ' ';
       }
 
       fmt::print(stderr, "\t{}{}\n", blue(pointer.str()), green(std::string("↑")));
@@ -133,14 +133,14 @@ public:
       column = c;
       std::string lineOfCode = getLine(file, static_cast<std::size_t>(line.value()));
       fmt::print(stderr, blue("✦ [Error ✘] \n") + gold("└── {}\n"), red(what()));
-      fmt::print(stderr, "{} {}\n {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"));
+      fmt::print(stderr, "{} {}\n {} {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"), green("[" + std::to_string(line.value()) + " " + "|" + " " + std::to_string(column.value()) + "]"));
       fmt::print(stderr, gold("───────≼≽────────\n"));
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
       for (int i = 1; i < column.value(); ++i)
       {
-         pointer << '~';
+         pointer << ' ';
       }
 
       fmt::print(stderr, "\t{}{}\n", blue(pointer.str()), green(std::string("↑")));
@@ -162,14 +162,14 @@ public:
       column = c;
       std::string lineOfCode = getLine(file, static_cast<std::size_t>(line.value()));
       fmt::print(stderr, blue("✦ [Error ✘] \n") + gold("└── {}\n"), red(what()));
-      fmt::print(stderr, "{} {}\n {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"));
+      fmt::print(stderr, "{} {}\n {} {}\n", blue("• [Line of Error]"), red("[" + file + ":" + std::to_string(l) + ":" + std::to_string(c) + "]"), gold("↓"), green("[" + std::to_string(line.value()) + " " + "|" + " " + std::to_string(column.value()) + "]"));
       fmt::print(stderr, gold("───────≼≽────────\n"));
       fmt::print(stderr, "\t{}\n", white(lineOfCode));
 
       std::ostringstream pointer;
       for (int i = 1; i < column.value(); ++i)
       {
-         pointer << '~';
+         pointer << ' ';
       }
 
       fmt::print(stderr, "\t{}{}\n", blue(pointer.str()), green(std::string("↑")));
