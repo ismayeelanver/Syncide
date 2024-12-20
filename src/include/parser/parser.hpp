@@ -15,22 +15,46 @@ using ArrayExpr = AST::ArrayExpr;
 using BooleanExpr = AST::BooleanExpr;
 using ParenthesizedExpr = AST::EnclosedExpr;
 using CallExpr = AST::CallExpr;
+using NilExpr = AST::ConcreteNilExpr;
 using LiteralExpr = AST::LiteralExpr;
 using IdentifierExpr = AST::IdentifierExpr;
 
 using Program = AST::ProgramStmt;
 using BlockStmt = AST::BlockStmt;
 using VariableStmt = AST::VariableStmt;
+using IfStmt = AST::IfStmt;
 using FunctionStmt = AST::FunctionStmt;
 using ExprStmt = AST::ExprStmt;
 using ReturnStmt = AST::ReturnStmt;
 
 inline std::unordered_map<token_t, int> opPr = {
-    {token_t::Tkn_Div, 20},
-    {token_t::Tkn_Mul, 20},
-    {token_t::Tkn_Mod, 20},
-    {token_t::Tkn_Plus, 10},
-    {token_t::Tkn_Minus, 10}};
+    // Unary operators (highest precedence)
+    {token_t::Tkn_Bang, 90},  // !
+    {token_t::Tkn_Tilde, 90}, // ~
+
+    // Multiplicative and Modulo operators
+    {token_t::Tkn_Mul, 80}, // *
+    {token_t::Tkn_Div, 80}, // /
+    {token_t::Tkn_Mod, 80}, // %
+
+    // Additive operators
+    {token_t::Tkn_Plus, 70},  // +
+    {token_t::Tkn_Minus, 70}, // -
+
+    // Relational and equality operators
+    {token_t::Tkn_Langle, 60},        // <
+    {token_t::Tkn_Rangle, 60},        // >
+    {token_t::Tkn_Lesser_Equal, 60},  // <=
+    {token_t::Tkn_Greater_Equal, 60}, // >=
+    {token_t::Tkn_Equal, 50},         // ==
+    {token_t::Tkn_Bang_Equal, 50},    // !=
+
+    // Logical AND/OR operators
+    {token_t::Tkn_And, 40}, // &&
+    {token_t::Tkn_Or, 30},  // ||
+
+    // Assignment operators (lower precedence)
+    {token_t::Tkn_Mut_Assignment, 20}};
 
 inline int getPrecedence(token_t type)
 {
@@ -54,11 +78,14 @@ private:
     std::shared_ptr<Stmt> variableOrfunction();
     std::shared_ptr<Stmt> stmtsOutside();
     std::shared_ptr<Stmt> returnStmt();
+    std::shared_ptr<Stmt> ifStmt();
 
     std::shared_ptr<Expr> makeAfterIdentifier();
 
     std::shared_ptr<Stmt> stmt();
     std::shared_ptr<Expr> expr();
+
+    std::shared_ptr<AST::Type> parseType();
 
     void consume(token_t);
     void advance();

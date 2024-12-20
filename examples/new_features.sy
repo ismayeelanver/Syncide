@@ -1,0 +1,6 @@
+let main() ::
+begin
+ -- this is the new feature file
+ if (!false) begin
+ end
+end

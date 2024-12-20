@@ -5,10 +5,10 @@ int main(void)
 
   Lexer lexer = Lexer{};
 
-  lexer.getTokens("examples/arrays.sy");
+  lexer.getTokens("examples/if.sy");
   lexer.tokenize();
 
-  Parser p = Parser{"examples/arrays.sy"};
+  Parser p = Parser{"examples/if.sy"};
   AST::DebugVisitor debugger;
   auto program = std::make_shared<Program>(std::move(p.produceAST(lexer.tokens)));
 

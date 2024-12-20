@@ -12,8 +12,6 @@
 using token_value_t = char;
 using token_values_t = std::vector<token_value_t>;
 
-
-
 typedef enum class token_t
 {
   // Symbols
@@ -24,10 +22,13 @@ typedef enum class token_t
   Tkn_Lparen,
   Tkn_RCurly,
   Tkn_LCurly,
+  Tkn_Langle,
+  Tkn_Rangle,
   Tkn_Semi,
   Tkn_Plus,
   Tkn_Minus,
   Tkn_Div,
+  Tkn_Question,
   Tkn_Mul,
   Tkn_Mod,
   Tkn_Bang,
@@ -40,11 +41,23 @@ typedef enum class token_t
   Tkn_Number,
   Tkn_Float,
   Tkn_True,
+  Tkn_Nil,
   Tkn_False,
   Tkn_String,
 
+  Tkn_Equal,
+  Tkn_Bang_Equal,
+  Tkn_Greater_Equal,
+  Tkn_Lesser_Equal,
+  Tkn_And,
+  Tkn_Or,
+  Tkn_Concat,
+
   // Keywords
   Tkn_If,
+  Tkn_Else,
+  Tkn_Elif,
+  Tkn_Then,
   Tkn_Let,
   Tkn_Begin,
   Tkn_End,
@@ -63,6 +76,7 @@ inline std::unordered_map<token_t, std::string> tokenToStringMap = {
     {token_t::Tkn_RCurly, "Tkn_RCurly"},
     {token_t::Tkn_LCurly, "Tkn_LCurly"},
     {token_t::Tkn_Semi, "Tkn_Semi"},
+    {token_t::Tkn_Question, "Tkn_Question"},
     {token_t::Tkn_Plus, "Tkn_Plus"},
     {token_t::Tkn_Minus, "Tkn_Minus"},
     {token_t::Tkn_Div, "Tkn_Div"},
@@ -76,18 +90,21 @@ inline std::unordered_map<token_t, std::string> tokenToStringMap = {
     {token_t::Tkn_Identifier, "Tkn_Identifier"},
     {token_t::Tkn_True, "Tkn_True"},
     {token_t::Tkn_False, "Tkn_False"},
+    {token_t::Tkn_Nil, "Tkn_Nil"},
     {token_t::Tkn_Number, "Tkn_Number"},
     {token_t::Tkn_String, "Tkn_String"},
     {token_t::Tkn_If, "Tkn_If"},
+    {token_t::Tkn_Elif, "Tkn_Elif"},
+    {token_t::Tkn_Else, "Tkn_Else"},
+    {token_t::Tkn_Then, "Tkn_Then"},
     {token_t::Tkn_Let, "Tkn_Let"},
     {token_t::Tkn_Begin, "Tkn_Begin"},
     {token_t::Tkn_End, "Tkn_End"},
     {token_t::Tkn_Ret, "Tkn_Ret"},
-    {token_t::Tkn_Eof, "Tkn_Eof"}
-};
+    {token_t::Tkn_Eof, "Tkn_Eof"}};
 
-
-inline std::string TokenToString(token_t tk) {
+inline std::string TokenToString(token_t tk)
+{
   return tokenToStringMap.at(tk);
 }
 typedef struct token_position_t
@@ -106,7 +123,6 @@ public:
   token_position_t Position;
 };
 
-
 class Lexer
 {
 public:
@@ -114,7 +130,6 @@ public:
   std::string Filename;
   token_values_t values;
   token_position_t pos;
-
 
   void getTokens(std::string);
   void printToken(const token_visual_t &token);

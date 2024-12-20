@@ -48,8 +48,17 @@ void Lexer::tokenize()
     }
     case '!':
     {
-      tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Bang, pos));
-      pos.col++;
+      if (i + 1 < values.size() && values[i + 1] == '=')
+      {
+        tokens.push_back(makeToken("!=", token_t::Tkn_Bang_Equal, pos));
+        i++;          // Skip the '='
+        pos.col += 2; // Advance column for both characters
+      }
+      else
+      {
+        tokens.push_back(makeToken("!", token_t::Tkn_Bang, pos));
+        pos.col++;
+      }
       break;
     }
     case '@':
@@ -83,6 +92,13 @@ void Lexer::tokenize()
       break;
     }
 
+    case '?':
+    {
+      tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Question, pos));
+      pos.col++;
+      break;
+    }
+
     case '*':
     {
       tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Mul, pos));
@@ -94,6 +110,21 @@ void Lexer::tokenize()
     {
       tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Div, pos));
       pos.col++;
+      break;
+    }
+
+    case '=':
+    {
+      if (i + 1 < values.size() && values[i + 1] == '=')
+      {
+        tokens.push_back(makeToken("==", token_t::Tkn_Equal, pos));
+        i++;          // Skip the '='
+        pos.col += 2; // Advance column for both characters
+      }
+      else
+      {
+        InvalidToken(Filename, pos.line, pos.col);
+      }
       break;
     }
 
@@ -138,6 +169,22 @@ void Lexer::tokenize()
         pos.col++; // Increment column for single `:`
       }
 
+      break;
+    }
+
+    case '&':
+    {
+      if (i + 1 < values.size() && values[i + 1] == '&')
+      {
+        tokens.push_back(makeToken("&&", token_t::Tkn_And, pos));
+        pos.col += 2;
+        i++;
+      }
+      else
+      {
+        tokens.push_back(makeToken("&", token_t::Tkn_Concat, pos));
+        pos.col++;
+      }
       break;
     }
 
@@ -221,6 +268,36 @@ void Lexer::tokenize()
     {
       tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Lparen, pos));
       pos.col++;
+      break;
+    }
+    case '<':
+    {
+      if (i + 1 < values.size() && values[i + 1] == '=')
+      {
+        tokens.push_back(makeToken("<=", token_t::Tkn_Lesser_Equal, pos));
+        i += 1;
+        pos.col++;
+      }
+      else
+      {
+        tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Langle, pos));
+        pos.col++;
+      }
+      break;
+    }
+    case '>':
+    {
+      if (i + 1 < values.size() && values[i + 1] == '=')
+      {
+        tokens.push_back(makeToken(">=", token_t::Tkn_Greater_Equal, pos));
+        i += 1;
+        pos.col++;
+      }
+      else
+      {
+        tokens.push_back(makeToken(std::string(1, ch), token_t::Tkn_Rangle, pos));
+        pos.col++;
+      }
       break;
     }
     case '\n':
@@ -318,6 +395,22 @@ void Lexer::tokenize()
         else if (identifier == "false")
         {
           tokens.push_back(makeToken(identifier, token_t::Tkn_False, pos));
+        }
+        else if (identifier == "nil")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Nil, pos));
+        }
+        else if (identifier == "then")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Then, pos));
+        }
+        else if (identifier == "else")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Else, pos));
+        }
+        else if (identifier == "elif")
+        {
+          tokens.push_back(makeToken(identifier, token_t::Tkn_Elif, pos));
         }
         else
         {

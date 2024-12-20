@@ -10,6 +10,80 @@
 
 namespace AST
 {
+
+    class Type
+    {
+    public:
+        virtual ~Type() = default;
+        virtual std::string toString() const = 0;
+    };
+
+    class IdentifierType : public Type
+    {
+    public:
+        std::string name;
+
+        explicit IdentifierType(const std::string &name) : name(name) {}
+
+        std::string toString() const override
+        {
+            return "IdentifierOrType(" + name + ")";
+        }
+    };
+    class TemplateType : public Type
+    {
+    public:
+        std::vector<std::shared_ptr<Type>> tempargs;
+        std::string typeName;
+
+        explicit TemplateType(std::string typeName, std::vector<std::shared_ptr<AST::Type>> tempargs) : tempargs(tempargs), typeName(typeName) {}
+
+        std::string toString() const override
+        {
+            std::ostringstream ss;
+
+            ss << "Template(";
+            for (size_t i = 0; i < tempargs.size(); ++i)
+            {
+                ss << tempargs[i]->toString();
+                if (i != tempargs.size() - 1)
+                {
+                    ss << ", ";
+                }
+            }
+            ss << ")\n";
+            return ss.str();
+        }
+    };
+
+    class FunctionPointerType : public Type
+    {
+    public:
+        std::shared_ptr<Type> returnType;
+        std::vector<std::shared_ptr<Type>> paramTypes;
+
+        FunctionPointerType(std::shared_ptr<Type> returnType, std::vector<std::shared_ptr<Type>> paramTypes)
+            : returnType(std::move(returnType)), paramTypes(std::move(paramTypes)) {}
+
+        std::string toString() const override
+        {
+            std::stringstream ss;
+            ss << "FunctionType(";
+
+            for (size_t i = 0; i < paramTypes.size(); ++i)
+            {
+                ss << paramTypes[i]->toString();
+                if (i != paramTypes.size() - 1) // If it's not the last element
+                {
+                    ss << ", ";
+                }
+            }
+
+            ss << ") -> " << returnType->toString();
+            return ss.str();
+        }
+    };
+
     enum class ExprType
     {
         Literal,
@@ -18,14 +92,19 @@ namespace AST
         Unary,
         Identifier,
         Binary,
+        Nil,
         Enclosed,
         FunctionCall
     };
-    using Literal = std::variant<int64_t, double, std::string>;
+    using Literal = std::variant<int64_t, long double, std::string>;
     inline std::unordered_map<ExprType, std::string> mapOfTypesOfExprs = {
         {ExprType::Literal, "Literal"},
         {ExprType::Identifier, "Identifier"},
         {ExprType::Binary, "Binary"},
+        {ExprType::Unary, "Unary"},
+        {ExprType::Boolean, "Boolean"},
+        {ExprType::Array, "Array"},
+        {ExprType::Nil, "Nil"},
         {ExprType::Enclosed, "Enclosed"},
         {ExprType::FunctionCall, "FunctionCall"}};
     inline std::string
@@ -47,6 +126,25 @@ namespace AST
     public:
         ExprType type;
         virtual ~Expr() = default; // Virtual destructor for polymorphism
+    };
+
+    class NilExpr : public Expr
+    {
+    public:
+        virtual void nil() = 0;
+        NilExpr()
+        {
+            type = ExprType::Nil;
+        }
+    };
+
+    class ConcreteNilExpr : public NilExpr
+    {
+    public:
+        void nil() override
+        {
+            // Provide implementation for the pure virtual function
+        }
     };
 
     // Binary Expression
@@ -79,12 +177,11 @@ namespace AST
     class BooleanExpr : public Expr
     {
     public:
-        explicit BooleanExpr(bool capOrnocap) : huh(capOrnocap)
+        explicit BooleanExpr(std::string boolean) : huh(boolean)
         {
             type = ExprType::Boolean;
         }
-
-        bool huh;
+        std::string huh;
     };
 
     // Literal Expression
@@ -155,6 +252,7 @@ namespace AST
         Block,
         ExprStmt,
         ProgramStmt,
+        If,
         ReturnStmt
     };
 
@@ -168,16 +266,22 @@ namespace AST
     class VariableStmt : public Stmt
     {
     public:
-        VariableStmt(std::string name, std::shared_ptr<Expr> initializer, bool constant, std::string typedname)
-            : name(std::move(name)), initializer(std::move(initializer)), isConst(constant), typedname(typedname)
+        std::string name;
+        std::shared_ptr<AST::Type> typedname; // Changed to shared_ptr<AST::Type> for consistency
+        std::shared_ptr<Expr> initializer;    // Expression initializing the variable
+        bool isConst;
+
+        VariableStmt(const std::string &name,
+                     std::shared_ptr<Expr> initializer,
+                     bool constant,
+                     std::shared_ptr<AST::Type> typedname)
+            : name(name),
+              initializer(std::move(initializer)),
+              isConst(constant),
+              typedname(std::move(typedname)) // Now using shared_ptr<AST::Type>
         {
             type = StmtType::Variable;
         }
-
-        std::string name;
-        std::string typedname;
-        std::shared_ptr<Expr> initializer; // Expression initializing the variable
-        bool isConst;
     };
 
     class BlockStmt : public Stmt
@@ -197,21 +301,37 @@ namespace AST
         std::shared_ptr<std::vector<std::shared_ptr<Stmt>>> statements;
     };
 
+    class IfStmt : public Stmt
+    {
+    public:
+        std::shared_ptr<Expr> condition;
+        std::vector<std::shared_ptr<Stmt>> consequent;
+        std::vector<std::shared_ptr<Stmt>> alternate;
+
+        IfStmt(std::shared_ptr<Expr> condition,
+               std::vector<std::shared_ptr<Stmt>> thenBlock,
+               std::vector<std::shared_ptr<Stmt>> elseBlock)
+            : condition(std::move(condition)), consequent(std::move(thenBlock)), alternate(std::move(elseBlock))
+        {
+            type = StmtType::If;
+        }
+    };
+
     class FunctionStmt : public Stmt
     {
     public:
         std::string name;
-        std::vector<std::pair<std::string, std::string>> param;
-        std::string typedname;
+        std::vector<std::pair<std::string, std::shared_ptr<AST::Type>>> param;
+        std::shared_ptr<AST::Type> typedname; // Changed to shared_ptr<AST::Type>
         std::shared_ptr<std::vector<std::shared_ptr<Stmt>>> body;
 
         FunctionStmt(const std::string &name,
-                     const std::vector<std::pair<std::string, std::string>> &parameters,
-                     const std::string &returnType,
+                     const std::vector<std::pair<std::string, std::shared_ptr<AST::Type>>> &parameters,
+                     std::shared_ptr<AST::Type> &returnType,
                      const std::vector<std::shared_ptr<Stmt>> &bodyStmts)
             : name(name),
               param(parameters),
-              typedname(returnType),
+              typedname(std::move(returnType)), // Now passing shared_ptr<AST::Type>
               body(std::make_shared<std::vector<std::shared_ptr<Stmt>>>(bodyStmts))
         {
             type = StmtType::Function;
@@ -293,7 +413,7 @@ namespace AST
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, int64_t>)
                 ss << "Integer(" << arg << ")";
-            else if constexpr (std::is_same_v<T, double>)
+            else if constexpr (std::is_same_v<T, long double>)
                 ss << "Float(" << arg << ")";
             else if constexpr (std::is_same_v<T, std::string>)
                 ss << "String(\"" << arg << "\")"; }, lit);
@@ -341,6 +461,9 @@ namespace AST
             case ExprType::FunctionCall:
                 visitCallExpr(std::static_pointer_cast<CallExpr>(expr));
                 break;
+            case ExprType::Nil:
+                visitNilExpr();
+                break;
             }
         }
 
@@ -359,7 +482,7 @@ namespace AST
         {
             std::cout << indent() << "BooleanExpr:\n";
             indent_level++;
-            std::cout << indent() << (expr->huh ? (std::string) "true" : (std::string) "false") << "\n";
+            std::cout << indent() << expr->huh << "\n";
             indent_level--;
         }
 
@@ -372,6 +495,11 @@ namespace AST
             indent_level++;
             visitExpr(expr->operand);
             indent_level--;
+        }
+
+        void visitNilExpr()
+        {
+            std::cout << indent() << "NilExpr\n";
         }
 
         void visitBinaryExpr(const std::shared_ptr<BinaryExpr> &expr)
@@ -471,7 +599,35 @@ namespace AST
             case StmtType::ReturnStmt:
                 visitReturnStmt(std::static_pointer_cast<ReturnStmt>(stmt));
                 break;
+            case StmtType::If:
+                visitIfStmt(std::static_pointer_cast<IfStmt>(stmt));
+                break;
             }
+        }
+
+        void visitIfStmt(const std::shared_ptr<IfStmt> &stmt)
+        {
+            std::cout << indent() << "IfStmt:\n";
+            indent_level++;
+            std::cout << indent() << "Condition:\n";
+            indent_level++;
+            visitExpr(stmt->condition);
+            indent_level--;
+            std::cout << indent() << "Consquent:\n";
+            indent_level++;
+            for (auto statement : stmt->consequent)
+            {
+                visitStmt(statement);
+            }
+            indent_level--;
+            std::cout << indent() << "Alternate:\n";
+            indent_level++;
+            for (auto statement : stmt->alternate)
+            {
+                visitStmt(statement);
+            }
+            indent_level--;
+            indent_level--;
         }
 
         void visitReturnStmt(const std::shared_ptr<ReturnStmt> &stmt)
@@ -493,14 +649,32 @@ namespace AST
 
             // Print function name and return type
             std::cout << indent() << "Name: " << stmt->name << "\n";
-            std::cout << indent() << "Return Type: " << stmt->typedname << "\n";
+            std::cout << indent() << "Return Type: \n";
+            indent_level++;
+            if (stmt->typedname)
+            {
+                std::cout << indent() << stmt->typedname->toString() << "\n";
+            }
+            else
+            {
+                std::cout << indent() << "null\n";
+            }
+            indent_level--;
 
             // Print parameters
             std::cout << indent() << "Parameters:\n";
             indent_level++;
             for (const auto &p : stmt->param)
             {
-                std::cout << indent() << "Parameter: " << p.first << " (Type: " << p.second << ")\n";
+                std::cout << indent() << "Parameter: " << p.first;
+                if (p.second)
+                {
+                    std::cout << " (Type: " << p.second->toString() << ")\n";
+                }
+                else
+                {
+                    std::cout << " (Type: null)\n";
+                }
             }
             indent_level--;
 
@@ -528,7 +702,10 @@ namespace AST
             std::cout << indent() << "VariableStmt:\n";
             indent_level++;
             std::cout << indent() << "Name: " << stmt->name << "\n";
-            std::cout << indent() << "Type: " << stmt->typedname << "\n";
+            std::cout << indent() << "Type: \n";
+            indent_level++;
+            std::cout << indent() << stmt->typedname->toString() << "\n";
+            indent_level--;
             std::cout << indent() << "IsConst: " << (stmt->isConst ? "true" : "false") << "\n";
             if (stmt->initializer)
             {
