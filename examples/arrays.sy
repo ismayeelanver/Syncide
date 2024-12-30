@@ -1,0 +1,4 @@
+
+let main() :: begin
+ let i ~ Arr<Int> :: {1, 2};
+end

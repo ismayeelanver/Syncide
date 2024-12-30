@@ -1,0 +1,10 @@
+Syncide (1.2) unstable;
+
+ * Added: Rust version
+ * Discontinue: C++ version
+ * Fix: If Stmts
+ * Added: Loops
+ * Added: Structs and Instantions
+ * Fix: warnings : unused stuff
+
+-- Ismayeel <ismayeelanver@gmail.com> Mon Dec 30, 18:48::00 +0000

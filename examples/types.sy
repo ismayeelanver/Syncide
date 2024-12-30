@@ -1,0 +1,1 @@
+type person :: Pair<Str, Int>; -- Our style

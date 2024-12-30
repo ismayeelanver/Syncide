@@ -1,0 +1,6 @@
+let main ::
+begin
+ let contents ~ Str :: readFile("example.txt")
+
+ println(contents);
+end

@@ -1,0 +1,51 @@
+let add(a: Int, b: Int) ~ Int :: begin
+ return a + b; 
+end
+
+let sub(a: Int, b: Int) ~ Int :: begin
+ return a - b;
+end
+
+let mul(a: Int, b: Int) ~ Int :: begin
+ return a * b;
+end
+
+let div(a: Int, b: Int) ~ Int :: begin
+ return a / b;
+end
+
+let mod(a: Int, b: Int) ~ Int :: begin
+ return a % b;
+end
+
+type operation :: Int32(Int32, Int32);
+
+let getOp() ~ Str :: begin
+ println("Options: [1] add [2] sub [3] mul [4] div [5] mod")
+ let op :: input("Choose [1-5]: ");
+ return op;
+end
+
+let turnToFunc(Op: Str) ~ operation :: begin
+ let i :: parseInt(Op);
+ let arr := {add, sub, mul, div, mod};
+ if (i <= 1 && i >= 6) then
+  return arr[i - 1];
+ end
+end
+
+let main() ~ Int :: begin
+ let op := getOp();
+ let left := parseInt(input("1st number "));
+ let right := parseInt(input("2nd number "));
+ let func := turnToFunc(op);
+
+ if (func != nil) then
+  if (?left && ?right) then
+   func(left, right);
+  end
+ else
+  println("Cannot parse your input!");
+  exit(1);
+ end
+end

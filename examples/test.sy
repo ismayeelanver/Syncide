@@ -1,0 +1,7 @@
+let main() ~  Int :: begin
+    if (true) then
+        println("Hello world!");
+    elif 1 then
+        println("Goodbye world!");
+    end
+end
