@@ -1,4 +1,0 @@
-let main() ::
-begin
- println("Hello, world!");
-end

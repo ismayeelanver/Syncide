@@ -1,6 +1,0 @@
-let main() ::
-begin
- print("Enter something: ");
- let input ~ Str :: input();
- println("You said:" & input);
-end
