@@ -2,6 +2,7 @@ pub mod ast;
 pub mod lexer;
 pub mod error;
 
+
 use ast::*;
 use error::{ ExpectedFound, ExpectedMultipleFound };
 use lexer::*;
@@ -93,6 +94,7 @@ impl Parser {
             Token::Let => self.let_statement(),
             Token::Return => self.return_statement(),
             Token::If => self.if_statement(),
+            Token::Type => self.type_statement(),
             _ => {
                 let expr = self.expression();
                 self.consume(Token::Semicolon);
@@ -101,8 +103,73 @@ impl Parser {
         }
     }
 
+
     pub fn not_eof(&self) -> bool {
         self.at().token != Token::Eof
+    }
+
+    pub fn struct_type(&mut self) -> DType {
+        self.consume(Token::Struct);
+        let mut fields = FxHashMap::default();
+        while self.not_eof() && self.at().token != Token::End {
+            let field_name = self.eat().token;
+            let mut field_rname = String::new();
+            match field_name {
+                Token::Identifier(ref name) => {
+                    field_rname = name.clone()
+                }
+                _ => {
+                    ExpectedFound::new(&self.file, self.at().position.line, self.at().position.column, "Identifier", format!("{:?}", self.at().token).as_str());
+                }
+            }
+
+            self.consume(Token::Colon);
+
+            let field_type = self._type();
+
+            fields.insert(field_rname, field_type);
+
+            if self.at().token == Token::Comma {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+        self.consume(Token::End);
+        return DType::Struct(fields);
+    }
+
+
+    pub fn type_statement(&mut self) -> Stmt {
+        self.consume(Token::Type);
+
+        let typename = self.eat().token;
+        let mut type_rname = String::new();
+
+        match typename {
+            Token::Identifier(ref name) => {
+                type_rname = name.clone()
+            }
+            _ => {
+                ExpectedFound::new(&self.file, self.at().position.line, self.at().position.column, "Identifier", format!("{:?}", self.at().token).as_str());
+            }
+        }
+
+        let dtype = match self.at().token {
+            Token::Identifier(_) => {
+                let type_ = self._type();
+                DType::Custom(type_)
+            }
+            Token::Struct => {
+                self.struct_type()
+            }
+            _ => {
+                ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Struct Implementation", "Identifier"], format!("{:?}", self.at().token).as_str());
+                DType::Custom(Type::Identifier("Unknown".to_string()))
+            }
+        };
+
+        return Stmt::TypeDeclaration(type_rname, dtype)
     }
 
     pub fn if_statement(&mut self) -> Stmt {
@@ -459,7 +526,7 @@ impl Parser {
                             }
                         }
 
-                        self.consume(Token::Colon);
+                        self.consume(Token::MutAssignment);
 
                         let field_expr = self.expression();
 
@@ -472,7 +539,7 @@ impl Parser {
                     }
                     self.consume(Token::RightCurly);
 
-                    return Expr::IStruct(struct_name, fields);
+                    return Expr::StructInstantiation(struct_name, fields);
                 }
                 _ => {
                     break;

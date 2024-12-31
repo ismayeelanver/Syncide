@@ -13,10 +13,7 @@ fn main() {
 
     let tokens = lexer.tokenize();
 
-    let mut parser = parser::Parser::new(tokens.clone(), lexer.filename);
-
-    let ast = parser.parse();
-
+    let ast = parser::Parser::new(tokens.clone(), lexer.filename).parse();
 
 
     println!("{:#?}", ast);
