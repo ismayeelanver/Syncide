@@ -23,6 +23,7 @@ pub enum Expr {
     StructInstantiation(String, FxHashMap<String, Expr>),
     FunctionCall(Box<Expr>, Vec<Expr>),
     New(FxHashMap<String, Expr>),
+    Proc(FxHashMap<String, Type>, Vec<Stmt>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -32,7 +33,7 @@ pub enum Type {
     FunctionPointer(String, Vec<Type>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum DType {
     Struct(FxHashMap<String, Type>),
     Custom(Type)
@@ -44,7 +45,7 @@ pub enum DType {
 /// It is used throughout the parser and other parts of the compiler.
 /// Represents different types of statements in the language, including variable declarations, function definitions, code blocks, program entry points, conditional statements, and return statements.
 /// These statement types are used throughout the parser and other parts of the compiler.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Stmt {
     Empty,
     Variable(String, Type, Expr, bool),

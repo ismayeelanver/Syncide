@@ -47,6 +47,7 @@ pub enum Token {
     Concat, // &
     PlusEqual, // +=
     MinusEqual,// -=
+    FatArrow, // =>
 
     // Keywords
     If,
@@ -68,6 +69,7 @@ pub enum Token {
     For,
     Pub,
     As,
+    Proc,
 
     // EOF
     Eof,
@@ -157,7 +159,10 @@ impl Lexer {
                 '=' => {
                     if self.match_next('=') {
                         self.add_token(Token::Equal, String::from("=="));
-                    } else {
+                    } else if self.match_next('>') {
+                        self.add_token(Token::FatArrow, String::from("=>"));
+                    }
+                    else {
                         InvalidToken::new(&self.filename, self.position.line, self.position.column);
                     }
                 }
@@ -336,6 +341,7 @@ impl Lexer {
             "do" => Token::Do,
             "pub" => Token::Pub,
             "as" => Token::As,
+            "proc" => Token::Proc,
             _ => Token::Identifier(text.clone()),
         };
 

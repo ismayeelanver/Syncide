@@ -6,7 +6,7 @@ use parser::lexer;
 
 
 fn main() {
-    let mut lexer: lexer::Lexer = lexer::Lexer::new(&"examples/test.sy").unwrap_or_else(|_| {
+    let mut lexer: lexer::Lexer = lexer::Lexer::new(&"examples/test.sr").unwrap_or_else(|_| {
         eprintln!("Error: Unable to open file.");
         exit(1);
     });

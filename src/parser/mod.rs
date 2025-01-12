@@ -15,6 +15,7 @@ use rustc_hash::FxHashMap;
 const PRECEDENCE: Lazy<FxHashMap<Token, usize>> = Lazy::new(|| {
     FxHashMap::from_iter([
         (Token::Colon, 90),
+        (Token::As, 85),
         (Token::Mul, 80),
         (Token::Div, 80),
         (Token::Mod, 80),
@@ -580,6 +581,37 @@ impl Parser {
                 }
                 self.consume(Token::RightCurly);
                 Expr::Array(arr)
+            }
+            Token::Proc => {
+                self.advance();
+                let mut params = FxHashMap::default();
+                self.consume(Token::FatArrow);
+                self.consume(Token::LeftParen);
+                while self.not_eof() && self.at().token != Token::RightParen {
+                    let name = self.eat();
+                    if let Token::Identifier(_) = name.token {
+                        self.advance();
+                    } else {
+                        ExpectedFound::new(
+                            &self.file,
+                            self.to_owned().at().position.line,
+                            self.to_owned().at().position.column,
+                            "identifier",
+                            self.to_owned().at().lexeme.as_str()
+                        );
+                        return Expr::Nil;
+                    }
+                    let var_type = self._type();
+                    params.insert(name.lexeme, var_type);
+                }
+                self.consume(Token::RightParen);
+                self.consume(Token::LeftCurly);
+                let mut body = vec![];
+                while self.not_eof() && self.at().token != Token::RightCurly {
+                    body.push(self.statement());
+                }
+                self.consume(Token::RightCurly);
+                return Expr::Proc(params, body);
             }
             Token::New => self.new_expr(),
             _ => {
