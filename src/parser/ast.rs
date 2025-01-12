@@ -22,6 +22,7 @@ pub enum Expr {
     Enclosed(Box<Expr>),
     StructInstantiation(String, FxHashMap<String, Expr>),
     FunctionCall(Box<Expr>, Vec<Expr>),
+    New(FxHashMap<String, Expr>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -37,12 +38,15 @@ pub enum DType {
     Custom(Type)
 }
 
+
+
 /// The `Stmt` enum represents different types of statements in the language.
 /// It is used throughout the parser and other parts of the compiler.
 /// Represents different types of statements in the language, including variable declarations, function definitions, code blocks, program entry points, conditional statements, and return statements.
 /// These statement types are used throughout the parser and other parts of the compiler.
 #[derive(Debug, Clone)]
 pub enum Stmt {
+    Empty,
     Variable(String, Type, Expr, bool),
     Function(String, FxHashMap<String, Type>, Type, Vec<Stmt>),
     Program(Vec<Stmt>),
@@ -51,6 +55,11 @@ pub enum Stmt {
     },
     If(Expr, Box<Stmt>, Box<Stmt>),
     Return(Expr),
+    Do(Vec<Stmt>),
+    For(String, String, Expr, Vec<Stmt>),
+    Times(Expr, Vec<Stmt>),
+    Pub(Box<Stmt>),
     Expr(Expr),
-    TypeDeclaration(String, DType)
+    While(Expr, Vec<Stmt>),
+    TypeDeclaration(Type, DType)
 }

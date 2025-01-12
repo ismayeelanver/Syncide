@@ -1,10 +1,7 @@
 Sycide (1.2.1) unstable;
 
- * Fix: Structs (Tue, 31 Dec 2024 05:54:06 +0000)
- * Fix: StructInstantiations (Tue, 31 Dec 2024 06:28:36 +0000)
-
- * Update Struct Syntax (Lisp like) (Tue, 31 Dec 2024 06:29:09 +0000)
- * Update Struct Instantions Syntax (:= instead of :) (Tue, 31 Dec 2024 06:29:48 +0000)
+ * Add: New Stmts (Sun, 12 Jan 2025 10:47:18 +0000
+)
 
 
 -- Ismayeel <ismayeelanver@gmail.com> Mon Dec 30, 18:48::00 +0000

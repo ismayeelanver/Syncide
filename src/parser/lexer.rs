@@ -60,6 +60,13 @@ pub enum Token {
     Struct,
     Enum,
     Type,
+    New,
+    Loop,
+    Do,
+    Times,
+    While,
+    For,
+    Pub,
 
     // EOF
     Eof,
@@ -232,6 +239,8 @@ impl Lexer {
             if escape {
                 match c {
                     'n' => value.push('\n'),
+                    
+                    'r' => value.push('\r'),
                     't' => value.push('\t'),
                     '"' => value.push('"'),
                     '\\' => value.push('\\'),
@@ -318,6 +327,13 @@ impl Lexer {
             "struct" => Token::Struct,
             "enum" => Token::Enum,
             "type" => Token::Type,
+            "new" => Token::New,
+            "loop" => Token::Loop,
+            "recur" => Token::Times,
+            "while" => Token::While,
+            "for" => Token::For,
+            "do" => Token::Do,
+            "pub" => Token::Pub,
             _ => Token::Identifier(text.clone()),
         };
 

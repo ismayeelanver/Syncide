@@ -1,21 +1,21 @@
-
-type Vector3 struct
-    x: Int,
-    y: Int,
-    z: Int
+pub type Vector3<T> struct
+    x: T,
+    y: T,
+    z: T
 end
 
 
 
-let main() ~  Int :: begin
-    let testInst :: Vector3{
+pub let main() ~  Int :: begin
+    let vector3 ~ Vector3<Int> :: new
         x := 1,
         y := 1,
-        z := 1
-    };
-    if (true) then
-        println("Hello world!");
-    elif 1 then
-        println("Goodbye world!");
+        z := 2
+    end;
+
+    loop, for a, _ := vector3 begin
+        println(a);
     end
+
+    vector3:x := 2 as Float;
 end
