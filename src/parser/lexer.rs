@@ -67,6 +67,7 @@ pub enum Token {
     While,
     For,
     Pub,
+    As,
 
     // EOF
     Eof,
@@ -334,6 +335,7 @@ impl Lexer {
             "for" => Token::For,
             "do" => Token::Do,
             "pub" => Token::Pub,
+            "as" => Token::As,
             _ => Token::Identifier(text.clone()),
         };
 
