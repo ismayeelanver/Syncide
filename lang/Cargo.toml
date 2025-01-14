@@ -1,0 +1,10 @@
+[package]
+name = "scorch"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+colored = "2.0"
+rustc-hash = "1.1"
+once_cell = "1.18"
+regex = "1.11.1"

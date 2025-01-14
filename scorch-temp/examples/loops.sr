@@ -1,0 +1,23 @@
+let main() :: begin
+ let a := 0;
+
+ -- times loops
+ loop, times a begin
+  println("Hello World!");
+ end
+
+ -- while loops
+ loop, while a < 1 begin
+  println("Hello World!");
+ end
+
+ -- foreach loops
+ loop, for element, index := {1} begin
+  println("Hello World!");
+ end
+
+ -- do loops
+ loop, do -- only do once
+  println("Hello World!");
+ end
+end
