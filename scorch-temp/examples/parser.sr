@@ -1,4 +1,0 @@
-let main() :: begin
- let a :: -1;
- return a;
-end
