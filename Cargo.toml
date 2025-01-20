@@ -1,2 +1,2 @@
 [workspace]
-members = ["lang"]
+members = ["lang", "sh"]

@@ -11,8 +11,6 @@ use lexer::*;
 use once_cell::sync::Lazy;
 use rustc_hash::FxHashMap;
 
-type ErrorBox = Box<dyn Fn()>;
-
 // Precedence table for binary operators
 const PRECEDENCE: Lazy<FxHashMap<Token, usize>> = Lazy::new(|| {
     FxHashMap::from_iter([
@@ -46,6 +44,8 @@ pub struct Parser {
     file: String,
 }
 
+type ErrorBox = Box<dyn Fn()>;
+
 impl Parser {
     pub fn new(tokens: Vec<TokenWithContext>, file: String) -> Self {
         let current_token = tokens
@@ -59,7 +59,6 @@ impl Parser {
             file,
         }
     }
-
     pub fn advance(&mut self) {
         if self.pos < self.tokens.len() - 1 {
             self.pos += 1;
@@ -85,10 +84,9 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Stmt {
+        pub fn parse(&mut self) -> Stmt {
         let mut errors_in_total: Vec<ErrorBox> = vec![];
         let mut had_error = false;
-
         for token in &self.tokens {
             match token.token {
                 Token::InvalidFloat(ref line, ref col) => {
@@ -133,20 +131,16 @@ impl Parser {
                 _ => {}
             }
         }
-
         if had_error {
             eprintln!("Total errors: {}", errors_in_total.len().to_string().red());
         }
-
         // Execute error handlers one by one
         for error in errors_in_total {
             error();
         }
-
         if had_error {
             exit(1);
         }
-
         let mut statements = Vec::new();
         while self.not_eof() {
             let stmt = self.clone().statement();
@@ -173,15 +167,10 @@ impl Parser {
                     Token::Type => self.type_statement(),
                     Token::Let => self.let_statement(),
                     _ => {
-                        ExpectedMultipleFound::new(
-                            &self.file,
-                            self.at().position.line,
-                            self.at().position.column,
-                            vec!["Identifier"],
-                            format!("{:?}", self.at().token).as_str()
-                        );
+                        ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Identifier"], format!("{:?}", self.at().token).as_str());
                         Stmt::Empty
                     }
+
                 };
 
                 Stmt::Pub(Box::new(decl))
@@ -194,32 +183,23 @@ impl Parser {
         }
     }
 
+
     pub fn not_eof(&self) -> bool {
         self.at().token != Token::Eof
     }
 
     pub fn struct_type(&mut self) -> DType {
         self.consume(Token::Struct);
-        let mut fields: std::collections::HashMap<
-            String,
-            Type,
-            std::hash::BuildHasherDefault<rustc_hash::FxHasher>
-        > = FxHashMap::default();
+        let mut fields: std::collections::HashMap<String, Type, std::hash::BuildHasherDefault<rustc_hash::FxHasher>> = FxHashMap::default();
         while self.not_eof() && self.at().token != Token::End {
             let field_name = self.eat().token;
             let mut field_rname = String::new();
             match field_name {
                 Token::Identifier(ref name) => {
-                    field_rname = name.clone();
+                    field_rname = name.clone()
                 }
                 _ => {
-                    ExpectedFound::new(
-                        &self.file,
-                        self.at().position.line,
-                        self.at().position.column,
-                        "Identifier",
-                        format!("{:?}", self.at().token).as_str()
-                    );
+                    ExpectedFound::new(&self.file, self.at().position.line, self.at().position.column, "Identifier", format!("{:?}", self.at().token).as_str());
                 }
             }
 
@@ -249,13 +229,7 @@ impl Parser {
             let frname = match fname {
                 Token::Identifier(ref name) => name.clone(),
                 _ => {
-                    ExpectedFound::new(
-                        &self.file,
-                        self.at().position.line,
-                        self.at().position.column,
-                        "Identifier",
-                        format!("{:?}", self.at().token).as_str()
-                    );
+                    ExpectedFound::new(&self.file, self.at().position.line, self.at().position.column, "Identifier", format!("{:?}", self.at().token).as_str());
                     "".to_string()
                 }
             };
@@ -275,19 +249,14 @@ impl Parser {
         Expr::New(fs)
     }
 
+
     pub fn type_statement(&mut self) -> Stmt {
         self.consume(Token::Type);
 
         let type_rname = self._type();
 
         if let Type::FunctionPointer(_, _) = type_rname {
-            ExpectedFound::new(
-                &self.file,
-                self.at().position.line,
-                self.tokens[self.pos - 1].position.column,
-                "Other Type",
-                format!("Function Pointer").as_str()
-            );
+            ExpectedFound::new(&self.file, self.at().position.line, self.tokens[self.pos - 1].position.column, "Other Type", format!("Function Pointer").as_str());
         }
 
         let dtype = match self.at().token {
@@ -295,20 +264,16 @@ impl Parser {
                 let type_ = self._type();
                 DType::Custom(type_)
             }
-            Token::Struct => { self.struct_type() }
+            Token::Struct => {
+                self.struct_type()
+            }
             _ => {
-                ExpectedMultipleFound::new(
-                    &self.file,
-                    self.at().position.line,
-                    self.at().position.column,
-                    vec!["Struct Implementation", "Identifier"],
-                    format!("{:?}", self.at().token).as_str()
-                );
+                ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Struct Implementation", "Identifier"], format!("{:?}", self.at().token).as_str());
                 DType::Custom(Type::Identifier("Unknown".to_string()))
             }
         };
 
-        return Stmt::TypeDeclaration(type_rname, dtype);
+        return Stmt::TypeDeclaration(type_rname, dtype)
     }
 
     pub fn if_statement(&mut self) -> Stmt {
@@ -428,30 +393,18 @@ impl Parser {
                 self.advance();
                 let element = self.eat();
                 self.consume(Token::Comma);
-                let index = self.eat();
+                let index =  self.eat();
 
                 match element.token {
                     Token::Identifier(_) => (),
                     _ => {
-                        ExpectedMultipleFound::new(
-                            &self.file,
-                            self.at().position.line,
-                            self.at().position.column,
-                            vec!["Identifier"],
-                            format!("{:?}", self.at().token).as_str()
-                        );
+                        ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Identifier"], format!("{:?}", self.at().token).as_str());
                     }
                 }
                 match index.token {
                     Token::Identifier(_) => (),
                     _ => {
-                        ExpectedMultipleFound::new(
-                            &self.file,
-                            self.at().position.line,
-                            self.at().position.column,
-                            vec!["Identifier"],
-                            format!("{:?}", self.at().token).as_str()
-                        );
+                        ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Identifier"], format!("{:?}", self.at().token).as_str());
                     }
                 }
 
@@ -493,13 +446,7 @@ impl Parser {
                 Stmt::While(condition, statements)
             }
             _ => {
-                ExpectedMultipleFound::new(
-                    &self.file,
-                    self.at().position.line,
-                    self.at().position.column,
-                    vec!["Do", "For"],
-                    format!("{:?}", self.at().token).as_str()
-                );
+                ExpectedMultipleFound::new(&self.file, self.at().position.line, self.at().position.column, vec!["Do", "For"], format!("{:?}", self.at().token).as_str());
                 Stmt::Block { block: vec![] }
             }
         }
@@ -640,12 +587,7 @@ impl Parser {
 
     pub fn unary(&mut self) -> Expr {
         match self.at().token {
-            | Token::Minus
-            | Token::Bang
-            | Token::Question
-            | Token::Concat
-            | Token::Mul
-            | Token::At => {
+            Token::Minus | Token::Bang | Token::Question | Token::Concat | Token::Mul | Token::At => {
                 let op = self.eat().token;
                 Expr::Unary(Box::new(self.unary()), op)
             }
@@ -717,6 +659,11 @@ impl Parser {
                         return Expr::Nil;
                     }
                     let var_type = self._type();
+                    if self.at().token == Token::Comma {
+                        self.advance();
+                    } else {
+                        break;
+                    }
                     params.insert(name.lexeme, var_type);
                 }
                 self.consume(Token::RightParen);

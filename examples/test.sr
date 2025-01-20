@@ -1,7 +1,6 @@
 import err, assert;
 
 use assert.assert;
-use assert.assert_eq;
 
 let multiply :: proc => (a: Integer, factor: Integer) {
  return a * factor;

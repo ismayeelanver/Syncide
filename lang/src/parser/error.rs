@@ -31,7 +31,7 @@ impl InvalidFloat {
             "[Error ✘]".red(),
             ("[".to_owned() + file + "]").blue()
         );
-        eprintln!("╰─▶ 〈{} 〉", "Invalid Float".red().underline().bold().italic());
+        eprintln!("↪ 〈{} 〉", "Invalid Float".red().underline().bold().italic());
         eprintln!("");
         eprintln!("\t{} ║ {}", line, line_of_code.purple());
         let total_line_len = line_of_code.len();
@@ -64,7 +64,7 @@ impl InvalidString {
             "[Error ✘]".red().bold(),
             ("[".to_owned() + file + "]").blue().bold()
         );
-        eprintln!("╰─▶ 〈{} 〉", "Invalid String".red().underline().bold().italic());
+        eprintln!("↪ 〈{} 〉", "Invalid String".red().underline().bold().italic());
         eprintln!("");
         eprintln!("\t{} ║ {}", line, line_of_code.purple());
         let total_line_len = line_of_code.len();
@@ -96,7 +96,7 @@ impl InvalidToken {
             "[Error ✘]".red().bold(),
             ("[".to_owned() + file + "]").blue().bold()
         );
-        eprintln!("╰─▶ 〈{} 〉", "Invalid Token".red().underline().bold().italic());
+        eprintln!("↪ 〈{} 〉", "Invalid Token".red().underline().bold().italic());
         eprintln!("");
         eprintln!("\t{} ║ {}", line, line_of_code.purple());
         let total_line_len = line_of_code.len();
@@ -127,7 +127,7 @@ impl ExpectedFound {
             "[Error ✘]".red(),
             ("[".to_owned() + file + "]").blue().bold()
         );
-        eprintln!("╰─▶ 〈{} 〉", "Wrong Token Found".red().underline().bold().italic());
+        eprintln!("↪ 〈{} 〉", "Wrong Token Found".red().underline().bold().italic());
         eprintln!("");
         eprintln!("\t{} ║ {}", line, line_of_code.purple());
         let total_line_len = line_of_code.len();
@@ -160,7 +160,7 @@ impl ExpectedMultipleFound {
             "[Error ✘]".red(),
             ("[".to_owned() + file + "]").blue().bold()
         );
-        eprintln!("╰─▶ 〈{} 〉", "Wrong Token Found".red().underline().bold().italic());
+        eprintln!("↪ 〈{} 〉", "Wrong Token Found".red().underline().bold().italic());
         eprintln!("");
         eprintln!("\t{} ║ {}", line, line_of_code.purple());
         let total_line_len = line_of_code.len();

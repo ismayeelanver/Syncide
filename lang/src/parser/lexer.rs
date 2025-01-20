@@ -1,3 +1,4 @@
+use super::error::{ InvalidFloat, InvalidToken, InvalidString };
 use std::fs;
 use std::io;
 
@@ -26,6 +27,8 @@ pub enum Token {
     Comma, // ,
     Colon, // :
     At, // @
+    Dot, // .
+    DotDot, // ..
 
     // Identifiers and literals
     Identifier(String),
@@ -45,7 +48,7 @@ pub enum Token {
     Or, // ||
     Concat, // &
     PlusEqual, // +=
-    MinusEqual,// -=
+    MinusEqual, // -=
     FatArrow, // =>
 
     // Keywords
@@ -68,14 +71,17 @@ pub enum Token {
     For,
     Pub,
     As,
+    Import,
+    Use,
     Proc,
+
+    InvalidString(usize, usize),
+    InvalidFloat(usize, usize),
+    InvalidToken(usize, usize),
+    UnterminatedString(usize, usize),
 
     // EOF
     Eof,
-
-    InvalidToken(usize, usize),
-    InvalidString(usize, usize),
-    InvalidFloat(usize, usize),
 }
 
 impl Default for Token {
@@ -135,7 +141,7 @@ impl Lexer {
                     }
                 }
                 '@' => self.add_token(Token::At, String::from("@")),
-                '+' =>{
+                '+' => {
                     if self.peek() == Some('=') {
                         self.advance();
                         self.add_token(Token::PlusEqual, String::from("+="));
@@ -164,9 +170,11 @@ impl Lexer {
                         self.add_token(Token::Equal, String::from("=="));
                     } else if self.match_next('>') {
                         self.add_token(Token::FatArrow, String::from("=>"));
-                    }
-                    else {
-                        self.add_token(Token::InvalidToken(self.position.line, self.position.column), String::from("="));
+                    } else {
+                        self.add_token(
+                            Token::InvalidToken(self.position.line, self.position.column),
+                            String::from("=")
+                        );
                     }
                 }
                 '%' => self.add_token(Token::Mod, String::from("%")),
@@ -194,6 +202,15 @@ impl Lexer {
                 ')' => self.add_token(Token::RightParen, String::from(")")),
                 '[' => self.add_token(Token::LeftSquare, String::from("[")),
                 ']' => self.add_token(Token::RightSquare, String::from("]")),
+
+                '.' => {
+                    if self.peek() == Some('.') {
+                        self.advance();
+                        self.add_token(Token::DotDot, String::from(".."));
+                    } else {
+                        self.add_token(Token::Dot, String::from("."));
+                    }
+                }
                 '<' => {
                     if self.match_next('=') {
                         self.add_token(Token::LesserEqual, String::from("<="));
@@ -221,7 +238,10 @@ impl Lexer {
                     } else if c.is_alphabetic() || c == '_' {
                         self.identifier();
                     } else {
-                        self.add_token(Token::InvalidToken(self.position.line, self.position.column), c.to_string());
+                        self.add_token(
+                            Token::InvalidToken(self.position.line, self.position.column),
+                            String::from(c.to_string())
+                        );
                     }
                 }
             }
@@ -248,13 +268,18 @@ impl Lexer {
             if escape {
                 match c {
                     'n' => value.push('\n'),
-                    
+
                     'r' => value.push('\r'),
                     't' => value.push('\t'),
                     '"' => value.push('"'),
                     '\\' => value.push('\\'),
                     _ => {
-                        self.add_token(Token::InvalidString(start_pos.line, start_pos.column), String::new());
+                        self.advance();
+                        self.add_token(
+                            Token::InvalidString(self.position.line, self.position.column),
+                            String::from("Invalid escape sequence")
+                        );
+                        return;
                     }
                 }
                 escape = false;
@@ -269,8 +294,10 @@ impl Lexer {
             self.advance();
         }
 
-        self.add_token(Token::InvalidString(start_pos.line, start_pos.column), String::new());
-
+        self.add_token(
+            Token::UnterminatedString(start_pos.line, start_pos.column),
+            String::from("Unterminated string")
+        );
     }
 
     fn number(&mut self) {
@@ -286,7 +313,11 @@ impl Lexer {
                 is_float = true;
                 self.advance();
                 if !self.peek().map_or(false, |next| next.is_digit(10)) {
-                    self.add_token(Token::InvalidFloat(self.position.line, self.position.column), String::new());
+                    self.add_token(
+                        Token::InvalidFloat(self.position.line, self.position.column),
+                        String::from("Invalid float number")
+                    );
+                    return;
                 }
             } else if c == '_' {
                 self.advance();
