@@ -1,28 +1,28 @@
 use std::process::exit;
-
 mod parser;
-
 use parser::lexer;
-
+use parser::error::CompilerError;
 
 fn main() {
-    let mut lexer: lexer::Lexer = lexer::Lexer::new(&"examples/test.sr").unwrap_or_else(|_| {
+    if let Err(e) = run() {
+        eprintln!("Compilation failed. Exited at code: 1");
+        exit(1);
+    }
+}
+
+
+
+fn run() -> Result<(), CompilerError> {
+    let mut lexer = lexer::Lexer::new(&"examples/test.sr").unwrap_or_else(|_| {
         eprintln!("Error: Unable to open file.");
         exit(1);
     });
 
-
-    eprintln!("[Lexical Analysis]\texamples/test.sy\n\n");
-
     let tokens = lexer.tokenize();
-
-    eprintln!("\t[Success]\tSuccess Lexing the source code into tokens!\n\n");
-
-    eprintln!("[Parser]\texamples/test.sy\n\n");
-
-    let ast = parser::Parser::new(tokens.clone(), lexer.filename).parse();
-
-    eprintln!("\t[Success]\tParsing the code into the tree! here's a great look into it:\n\n{:#?}", ast);
-
-
+    let ast = parser::Parser::new(tokens.clone(), lexer.filename).parse()?;
+    
+    // Do something with the AST here
+    println!("Successfully parsed AST: {:#?}", ast);
+    
+    Ok(())
 }

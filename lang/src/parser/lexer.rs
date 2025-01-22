@@ -1,4 +1,3 @@
-use super::error::{ InvalidFloat, InvalidToken, InvalidString };
 use std::fs;
 use std::io;
 
@@ -373,6 +372,8 @@ impl Lexer {
             "pub" => Token::Pub,
             "as" => Token::As,
             "proc" => Token::Proc,
+            "import" => Token::Import,
+            "use" => Token::Use,
             _ => Token::Identifier(text.clone()),
         };
 

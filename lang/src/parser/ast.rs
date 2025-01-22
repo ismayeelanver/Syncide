@@ -62,5 +62,6 @@ pub enum Stmt {
     Pub(Box<Stmt>),
     Expr(Expr),
     While(Expr, Vec<Stmt>),
-    TypeDeclaration(Type, DType)
+    TypeDeclaration(Type, DType),
+    Import(Vec<String>),
 }
